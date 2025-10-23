@@ -13,7 +13,7 @@ const { Client, GatewayIntentBits, Partials, PermissionsBitField } = require('di
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 const timezone = process.env.TIMEZONE || 'Europe/Berlin';
-const defaultPostCron = '0 19 * * SUN'; // Sonntags 19:00
+const defaultPostCron = process.env.POST_CRON;
 
 if (!token || !clientId) {
     console.error('Bitte DISCORD_TOKEN und CLIENT_ID in .env setzen.');
