@@ -252,7 +252,7 @@ async function handleWochenuebersicht(interaction) {
       message += '## 📅 _Keine geplanten Events._\n\n';
     }
   // message += '\n---\nNeue Themen oder spontane Events für die nächste Woche? Nutzt `/thema hinzufügen` oder `/event hinzufügen`!';
-  await interaction.reply({ content: message });
+  await channel.send({ content: message });
     } catch (err) {
         const errorMsg = handleError(err, 'Wochenübersicht');
         await interaction.reply({ content: errorMsg.message, ephemeral: true });
