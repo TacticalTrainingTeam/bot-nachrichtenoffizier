@@ -1,3 +1,5 @@
+const { getNextWeekRange } = require('./utils/dateUtils');
+const { createEventText } = require('./utils/eventUtils');
 
 require('dotenv').config();
 const cron = require('node-cron');
@@ -128,42 +130,17 @@ async function postWeeklySummary() {
     }
     const topics = await getAllTopics();
     const events = await getAllEvents();
-    // Berechne nächste Woche (Montag bis Sonntag)
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const daysToNextMonday = (8 - dayOfWeek) % 7 || 7;
-    const nextMonday = new Date(now);
-    nextMonday.setDate(now.getDate() + daysToNextMonday);
-    nextMonday.setHours(0,0,0,0);
-    const nextSunday = new Date(nextMonday);
-    nextSunday.setDate(nextMonday.getDate() + 6);
-    nextSunday.setHours(23,59,59,999);
-  const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
-  const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-  const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
-  const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
-  const year = nextMonday.getFullYear();
-  let message = `**🗓 Themen & Events für die nächste Woche (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})**\n\n`;
+    const { nextMonday, nextSunday } = getNextWeekRange();
+    const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
+    const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
+    const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+    const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
+    const year = nextMonday.getFullYear();
+    let message = `**🗓 Themen & Events für die nächste Woche (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})**\n\n`;
     if (events.length) {
       message += '**📌 Events:**\n';
       for (const e of events) {
-        // Suche nach Event-Link im Titel, Beschreibung oder Ort
-        let eventLink = '';
-        const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
-        if (e.title && linkRegex.test(e.title)) eventLink = e.title.match(linkRegex)[1];
-        else if (e.description && linkRegex.test(e.description)) eventLink = e.description.match(linkRegex)[1];
-        else if (e.location && linkRegex.test(e.location)) eventLink = e.location.match(linkRegex)[1];
-
-        let eventText = eventLink
-          ? `[${e.title}](${eventLink})`
-          : `**${e.title}**`;
-
-        let dateText = e.date_text;
-        if (dateText) {
-          // Entferne Sekunden aus Zeitangabe, z.B. "28.10.2025, 19:30:00" -> "28.10.2025, 19:30"
-          dateText = dateText.replace(/(\d{2}:\d{2}):\d{2}/, '$1');
-        }
-        message += `• ${eventText}${dateText ? ' — ' + dateText : ''}\n`;
+        message += createEventText(e) + '\n';
       }
       message += '\n';
     } else {
@@ -210,25 +187,16 @@ async function handleWochenuebersicht(interaction) {
             }
         }
         await syncDiscordEventsToDb(interaction.guild);
-        const topics = await dbOps.getAllTopics();
-        const events = await dbOps.getAllEvents();
-  // Berechne nächste Woche (Montag bis Sonntag)
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const daysToNextMonday = (8 - dayOfWeek) % 7 || 7;
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + daysToNextMonday);
-  nextMonday.setHours(0,0,0,0);
-  const nextSunday = new Date(nextMonday);
-  nextSunday.setDate(nextMonday.getDate() + 6);
-  nextSunday.setHours(23,59,59,999);
-  const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
-  const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-  const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
-  const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
-  const year = nextMonday.getFullYear();
-  let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
-        const discordEvents = events.filter(e => e.added_by === 'Discord-Event');
+    const topics = await dbOps.getAllTopics();
+    const events = await dbOps.getAllEvents();
+    const { nextMonday, nextSunday } = getNextWeekRange();
+    const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
+    const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
+    const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+    const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
+    const year = nextMonday.getFullYear();
+    let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
+    const discordEvents = events.filter(e => e.added_by === 'Discord-Event');
     /*
     // Spontane Events und Themen werden in der Testphase nicht angezeigt
     if (spontaneEvents.length) {
@@ -252,22 +220,7 @@ async function handleWochenuebersicht(interaction) {
     if (discordEvents.length) {
       message += '## 📅 Events\n';
       for (const e of discordEvents) {
-        // Suche nach Event-Link im Titel, Beschreibung oder Ort
-        let eventLink = '';
-        const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
-        if (e.title && linkRegex.test(e.title)) eventLink = e.title.match(linkRegex)[1];
-        else if (e.description && linkRegex.test(e.description)) eventLink = e.description.match(linkRegex)[1];
-        else if (e.location && linkRegex.test(e.location)) eventLink = e.location.match(linkRegex)[1];
-
-        let eventText = eventLink
-          ? `[${e.title}](${eventLink})`
-          : `**${e.title}**`;
-
-        let dateText = e.date_text;
-        if (dateText) {
-          dateText = dateText.replace(/(\d{2}:\d{2}):\d{2}/, '$1');
-        }
-        message += `• ${eventText}${dateText ? ' — ' + dateText : ''}\n`;
+        message += createEventText(e) + '\n';
       }
       message += '\n';
     } else {
