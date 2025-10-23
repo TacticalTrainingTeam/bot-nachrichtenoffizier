@@ -24,6 +24,25 @@ if (!token || !clientId || !guildId) {
 
 const commands = [
   {
+    name: 'config',
+    description: 'Konfiguriere den Bot',
+    options: [
+      {
+        name: 'channel',
+        type: TYPES.SUB_COMMAND,
+        description: 'Setze den Channel für den Wochenpost',
+        options: [
+          {
+            name: 'channel',
+            type: TYPES.CHANNEL,
+            description: 'Zielkanal für den Wochenpost',
+            required: true
+          }
+        ]
+      }
+    ]
+  },
+  {
     name: 'thema',
     description: 'Verwalte ein einzelnes Thema',
     options: [
