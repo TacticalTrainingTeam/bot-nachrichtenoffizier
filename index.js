@@ -138,11 +138,12 @@ async function postWeeklySummary() {
     const nextSunday = new Date(nextMonday);
     nextSunday.setDate(nextMonday.getDate() + 6);
     nextSunday.setHours(23,59,59,999);
-    const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
-    const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-    const month = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
-    const year = nextMonday.getFullYear();
-    let message = `**🗓 Themen & Events für die nächste Woche (${mondayDay}.${month}.–${sundayDay}.${month}.${year})**\n\n`;
+  const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
+  const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
+  const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+  const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
+  const year = nextMonday.getFullYear();
+  let message = `**🗓 Themen & Events für die nächste Woche (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})**\n\n`;
     if (events.length) {
       message += '**📌 Events:**\n';
       for (const e of events) {
@@ -180,8 +181,6 @@ async function postWeeklySummary() {
   }
 }
 
-// Technik-Rollen-ID
-const technikRoleId = '406217855860867072';
 
 // Wochenübersicht Handler
 async function handleWochenuebersicht(interaction) {
