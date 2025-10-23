@@ -46,7 +46,7 @@ async function syncDiscordEventsToDb(guild) {
     const startBerlin = new Date(startDate.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
     if (startBerlin >= nextMonday && startBerlin <= nextSunday) {
       const berlinTime = startDate.toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
-      await dbOps.insertEvent(event.name, berlinTime, 'Discord-Event', event.id);
+  await dbOps.insertEvent(event.name, event.description || '', event.location || '', berlinTime, 'Discord-Event', event.id);
     }
   }
 }
@@ -147,7 +147,17 @@ async function postWeeklySummary() {
     if (events.length) {
       message += '**📌 Events:**\n';
       for (const e of events) {
-        let eventText = `**${e.title}**`;
+        // Suche nach Event-Link im Titel, Beschreibung oder Ort
+        let eventLink = '';
+        const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
+        if (e.title && linkRegex.test(e.title)) eventLink = e.title.match(linkRegex)[1];
+        else if (e.description && linkRegex.test(e.description)) eventLink = e.description.match(linkRegex)[1];
+        else if (e.location && linkRegex.test(e.location)) eventLink = e.location.match(linkRegex)[1];
+
+        let eventText = eventLink
+          ? `[${e.title}](${eventLink})`
+          : `**${e.title}**`;
+
         let dateText = e.date_text;
         if (dateText) {
           // Entferne Sekunden aus Zeitangabe, z.B. "28.10.2025, 19:30:00" -> "28.10.2025, 19:30"
@@ -171,6 +181,7 @@ async function postWeeklySummary() {
     }
     */
   // message += '\n---\nWenn ihr noch Themen habt: `/thema`';
+  message += `\nAlle Events findest du hier: <#1184236432575955055>`;
   await channel.send({ content: message, flags: 4096 }); // SuppressEmbeds: verhindert Discord-Event-Anhänge
     // Nach dem Post löschen (Reset für nächste Woche)
     await clearTopics();
@@ -213,9 +224,10 @@ async function handleWochenuebersicht(interaction) {
   nextSunday.setHours(23,59,59,999);
   const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
   const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-  const month = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+  const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+  const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
   const year = nextMonday.getFullYear();
-  let message = `# 🗓 Wochenübersicht (${mondayDay}.${month}.–${sundayDay}.${month}.${year})\n\n`;
+  let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
         const discordEvents = events.filter(e => e.added_by === 'Discord-Event');
     /*
     // Spontane Events und Themen werden in der Testphase nicht angezeigt
@@ -240,7 +252,17 @@ async function handleWochenuebersicht(interaction) {
     if (discordEvents.length) {
       message += '## 📅 Events\n';
       for (const e of discordEvents) {
-        let eventText = `**${e.title}**`;
+        // Suche nach Event-Link im Titel, Beschreibung oder Ort
+        let eventLink = '';
+        const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
+        if (e.title && linkRegex.test(e.title)) eventLink = e.title.match(linkRegex)[1];
+        else if (e.description && linkRegex.test(e.description)) eventLink = e.description.match(linkRegex)[1];
+        else if (e.location && linkRegex.test(e.location)) eventLink = e.location.match(linkRegex)[1];
+
+        let eventText = eventLink
+          ? `[${e.title}](${eventLink})`
+          : `**${e.title}**`;
+
         let dateText = e.date_text;
         if (dateText) {
           dateText = dateText.replace(/(\d{2}:\d{2}):\d{2}/, '$1');
@@ -252,6 +274,7 @@ async function handleWochenuebersicht(interaction) {
       message += '## 📅 _Keine geplanten Events._\n\n';
     }
   // message += '\n---\nNeue Themen oder spontane Events für die nächste Woche? Nutzt `/thema hinzufügen` oder `/event hinzufügen`!';
+  message += `\nAlle Events findest du hier: <#1184236432575955055>`;
   await channel.send({ content: message });
     } catch (err) {
         const errorMsg = handleError(err, 'Wochenübersicht');

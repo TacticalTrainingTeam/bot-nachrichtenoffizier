@@ -41,13 +41,15 @@ function clearTopics() {
     });
 }
 
-function insertEvent(title, dateText, addedBy, discordEventId = null) {
+
+function insertEvent(title, description, location, dateText, addedBy, discordEventId = null) {
     return new Promise((resolve, reject) => {
-        db.run('INSERT INTO events (title, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?)', [title, dateText, addedBy, discordEventId], function(err) {
+        db.run('INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)', [title, description, location, dateText, addedBy, discordEventId], function(err) {
             if (err) reject(err); else resolve(this.lastID);
         });
     });
 }
+
 
 function getAllEvents() {
     return new Promise((resolve, reject) => {
