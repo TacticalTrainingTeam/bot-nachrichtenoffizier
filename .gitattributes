@@ -1,0 +1,79 @@
+# Line endings
+
+# Default behaviour, in case the git client doesn't have core.autocrlf set:
+# commit only LF line endings, but use CRLF locally if needed
+# https://help.github.com/articles/dealing-with-line-endings/
+# http://adaptivepatchwork.com/2012/03/01/mind-the-end-of-your-line/
+* text=auto
+
+# Force batch scripts to always use CRLF line endings
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{bat,[bB][aA][tT]} text eol=crlf
+
+# Force bash scripts to always use LF line endings
+*.sh text eol=lf diff=bash
+
+# Git usually auto-detects text and binary files. However, this can sometimes
+# fail and it is good practice to specifically tell Git which files are text
+# files and should be normalized. Expand if necessary.
+# For files for which Git has custom hunk headers, set the hunk header.
+# See https://git-scm.com/docs/gitattributes#_defining_a_custom_hunk_header
+# for a list of custom hunk headers already built into Git.
+*.java text diff=java
+*.js text
+*.ts text
+*.json text
+*.yaml text
+*.yml text
+Dockerfile text
+Jenkinsfile text
+*.md text diff=markdown
+*.adoc text
+*.css text diff=css
+*.scss text diff=css
+*.sass text
+*.htm text diff=html
+*.html text diff=html
+*.xml text
+
+# ==============================================================================
+
+# Whitespaces
+
+# whitespace=space-before-tab = do not allow spaces followed by tabs
+# whitespace=tab-in-indent    = do not allow indentation by tabs
+# whitespace=trailing-space   = do not allow trailing spaces
+
+* whitespace=space-before-tab,tab-in-indent,trailing-space
+
+# Exlusions
+# For certain files like Markdown files, trailing spaces etc. are sometimes
+# needed. Add further whitespace exclusions if necessary
+*.md -whitespace
+*.adoc -whitespace
+
+# ==============================================================================
+
+# Binary files
+
+# Git usually auto-detects text and binary files. However, this can sometimes
+# fail and it is good practice to specifically tell Git which files are binary.
+# Expand if necessary.
+*.class binary
+*.dll binary
+*.ear binary
+*.jar binary
+*.so binary
+*.war binary
+*.jks binary
+*.docx binary
+*.gif binary
+*.ico binary
+*.jpg binary diff=exif
+*.p12 binary
+*.pdf binary
+*.png binary
+*.tar.gz binary
+*.tgz binary
+*.xlsx binary
+*.zip binary

@@ -1,0 +1,21 @@
+{
+  "name": "weekly-summary-bot",
+  "version": "1.0.0",
+  "description": "Discord bot: Themen einsenden + wöchentlicher Post mit Themen & Events",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "deploy-commands": "node deploy-commands.js"
+  },
+  "dependencies": {
+  "sqlite3": "^5.1.6",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.3.1",
+    "node-cron": "^3.0.2",
+    "@discordjs/rest": "^1.6.0",
+    "discord-api-types": "^0.37.67"
+  }
+}

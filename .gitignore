@@ -416,3 +416,26 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Weiteres
+/dist
+/tmp
+/out-tsc
+/bazel-out
+npm-debug.log
+yarn-error.log
+.idea/
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+.history/*
+/.angular/cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+testem.log
+/typings
+Thumbs.db
