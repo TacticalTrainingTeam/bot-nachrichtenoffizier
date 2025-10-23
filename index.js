@@ -1,14 +1,11 @@
-// Refactored: Imports und Setup
+
 require('dotenv').config();
 const cron = require('node-cron');
-// Import nur einmal am Anfang der Datei
 const { migrate } = require('./db/db');
 const dbOps = require('./db/operations');
 const { handleError } = require('./utils/errorHandler');
 const commandRouter = require('./commandRouter');
 const { isAdmin, isEventManager, canManageEvents } = require('./utils/permissions');
-// index.js
-require('dotenv').config();
 const { Client, GatewayIntentBits, Partials, PermissionsBitField } = require('discord.js');
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
@@ -27,7 +24,7 @@ const client = new Client({
 
 migrate();
 
-// Hilfsfunktion: Discord-Events der kommenden Woche auslesen und eintragen
+// Synchronisiert Discord-Events der kommenden Woche mit der Datenbank
 async function syncDiscordEventsToDb(guild) {
   if (!guild?.scheduledEvents) return;
   await dbOps.clearEvents();

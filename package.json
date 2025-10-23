@@ -1,5 +1,5 @@
 {
-  "name": "weekly-summary-bot",
+  "name": "bot-nachrichtenoffizier",
   "version": "1.0.0",
   "description": "Discord bot: Themen einsenden + wöchentlicher Post mit Themen & Events",
   "main": "index.js",

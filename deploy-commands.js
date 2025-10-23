@@ -14,10 +14,9 @@ const TYPES = {
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID; // für schnellen Test: deine Test-Guild ID
 
-if (!token || !clientId || !guildId) {
-  console.error('Bitte DISCORD_TOKEN, CLIENT_ID und GUILD_ID in .env setzen.');
+if (!token || !clientId) {
+  console.error('Bitte DISCORD_TOKEN und CLIENT_ID in .env setzen.');
   process.exit(1);
 }
 
@@ -145,13 +144,11 @@ const commands = [
 
 
 const rest = new REST({ version: '10' }).setToken(token);
-async function deploy() {
-  try {
-    console.log('Registriere Commands im Guild...');
-    await rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: commands });
-    console.log('Slash-Commands erfolgreich registriert.');
-  } catch (err) {
-    console.error('Fehler beim Registrieren der Commands:', err);
-  }
+
+try {
+  console.log('Registriere globale Commands...');
+  await rest.put(Routes.applicationCommands(clientId), { body: commands });
+  console.log('Slash-Commands global registriert.');
+} catch (err) {
+  console.error('Fehler beim Registrieren der Commands:', err);
 }
-deploy();
