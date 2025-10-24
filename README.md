@@ -11,7 +11,7 @@ A TTT-Discord bot for weekly event and topic overviews.
 ```bash
 git clone https://github.com/TacticalTrainingTeam/bot-nachrichtenoffizier.git
 cd bot-nachrichtenoffizier
-npm install
+pnpm install
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ Set environment variables in `.env`:
 
 Start the bot:
 ```bash
-npm start
+pnpm start
 ```
 
 ## Docker

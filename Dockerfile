@@ -1,8 +1,10 @@
 # Dockerfile for Node.js Discord Bot
 FROM node:20-alpine
 
-# Create app directory and data directory
-RUN mkdir -p /app /app/data && chown -R node:node /app
+# Install pnpm and create directories
+RUN npm install -g pnpm && \
+    mkdir -p /app /app/data && \
+    chown -R node:node /app
 
 # Set working directory
 WORKDIR /app
@@ -11,10 +13,10 @@ WORKDIR /app
 USER node
 
 # Copy package files
-COPY --chown=node:node package*.json ./
+COPY --chown=node:node package*.json pnpm-lock.yaml* ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN pnpm install --frozen-lockfile --prod
 
 # Copy source code
 COPY --chown=node:node . .
