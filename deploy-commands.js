@@ -1,25 +1,24 @@
 // deploy-commands.js
 
-import dotenv from 'dotenv';
-dotenv.config();
+import 'dotenv/config';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
+import logger from './utils/logger.js';
 
 // Discord API Typen als Konstante
 const TYPES = {
   SUB_COMMAND: 1,
   STRING: 3,
-  CHANNEL: 7
+  CHANNEL: 7,
 };
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 
 if (!token || !clientId) {
-  console.error('Bitte DISCORD_TOKEN und CLIENT_ID in .env setzen.');
+  logger.error('Bitte DISCORD_TOKEN und CLIENT_ID in .env setzen.');
   process.exit(1);
 }
-
 
 const commands = [
   {
@@ -35,11 +34,11 @@ const commands = [
             name: 'channel',
             type: TYPES.CHANNEL,
             description: 'Zielkanal für den Wochenpost',
-            required: true
-          }
-        ]
-      }
-    ]
+            required: true,
+          },
+        ],
+      },
+    ],
   },
   {
     name: 'thema',
@@ -54,9 +53,9 @@ const commands = [
             name: 'text',
             type: TYPES.STRING,
             description: 'Thema oder kurze Beschreibung',
-            required: true
-          }
-        ]
+            required: true,
+          },
+        ],
       },
       {
         name: 'löschen',
@@ -67,11 +66,11 @@ const commands = [
             name: 'id',
             type: 4,
             description: 'ID des zu löschenden Themas',
-            required: true
-          }
-        ]
-      }
-    ]
+            required: true,
+          },
+        ],
+      },
+    ],
   },
   {
     name: 'themen',
@@ -80,9 +79,9 @@ const commands = [
       {
         name: 'löschen',
         type: TYPES.SUB_COMMAND,
-        description: 'Lösche alle Themen'
-      }
-    ]
+        description: 'Lösche alle Themen',
+      },
+    ],
   },
   {
     name: 'event',
@@ -94,8 +93,13 @@ const commands = [
         description: 'Füge ein Event hinzu',
         options: [
           { name: 'titel', type: TYPES.STRING, description: 'Event Titel', required: true },
-          { name: 'datum', type: TYPES.STRING, description: 'Datum/Zeit (optional)', required: false }
-        ]
+          {
+            name: 'datum',
+            type: TYPES.STRING,
+            description: 'Datum/Zeit (optional)',
+            required: false,
+          },
+        ],
       },
       {
         name: 'löschen',
@@ -106,11 +110,11 @@ const commands = [
             name: 'id',
             type: 4,
             description: 'ID des zu löschenden Events',
-            required: true
-          }
-        ]
-      }
-    ]
+            required: true,
+          },
+        ],
+      },
+    ],
   },
   {
     name: 'events',
@@ -119,14 +123,14 @@ const commands = [
       {
         name: 'löschen',
         type: TYPES.SUB_COMMAND,
-        description: 'Lösche alle Events'
+        description: 'Lösche alle Events',
       },
       {
         name: 'aufräumen',
         type: TYPES.SUB_COMMAND,
-        description: 'Synchronisiere die Discord-Eventliste'
-      }
-    ]
+        description: 'Synchronisiere die Discord-Eventliste',
+      },
+    ],
   },
   {
     name: 'wochenüberblick',
@@ -136,19 +140,18 @@ const commands = [
         name: 'channel',
         type: TYPES.CHANNEL,
         description: 'Optional: Kanal für die Übersicht',
-        required: false
-      }
-    ]
+        required: false,
+      },
+    ],
   },
 ];
-
 
 const rest = new REST({ version: '10' }).setToken(token);
 
 try {
-  console.log('Registriere globale Commands...');
+  logger.info('Registriere globale Commands...');
   await rest.put(Routes.applicationCommands(clientId), { body: commands });
-  console.log('Slash-Commands global registriert.');
+  logger.info('Slash-Commands global registriert.');
 } catch (err) {
-  console.error('Fehler beim Registrieren der Commands:', err);
+  logger.error('Fehler beim Registrieren der Commands:', err);
 }

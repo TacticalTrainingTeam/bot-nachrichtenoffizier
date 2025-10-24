@@ -2,20 +2,32 @@
   "name": "bot-nachrichtenoffizier",
   "version": "1.0.0",
   "description": "Discord bot: Themen einsenden + wöchentlicher Post mit Themen & Events",
+  "type": "module",
   "main": "index.js",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "start": "node index.js",
-    "deploy-commands": "node deploy-commands.js"
+    "deploy-commands": "node deploy-commands.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ."
   },
   "dependencies": {
-    "sqlite3": "^5.1.7",
+    "@discordjs/rest": "^2.2.0",
+    "discord-api-types": "^0.37.71",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.0",
+    "joi": "^18.0.1",
     "node-cron": "^3.0.3",
-    "@discordjs/rest": "^2.2.0",
-    "discord-api-types": "^0.37.71"
+    "sqlite3": "^5.1.7",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2"
   }
 }

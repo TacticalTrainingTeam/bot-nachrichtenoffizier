@@ -11,7 +11,7 @@ A TTT-Discord bot for weekly event and topic overviews.
 ```bash
 git clone https://github.com/TacticalTrainingTeam/bot-nachrichtenoffizier.git
 cd bot-nachrichtenoffizier
-pnpm install
+npm install
 ```
 
 ## Usage
@@ -21,12 +21,23 @@ Set environment variables in `.env`:
 
 Start the bot:
 ```bash
-pnpm start
+npm start
 ```
 
 ## Docker
+### Mit Docker Compose (empfohlen):
+```bash
+docker-compose up -d
+```
+
+### Mit Docker direkt:
 ```bash
 docker build -t nachrichtenoffizier .
-docker run --env DISCORD_TOKEN=... --env CLIENT_ID=... nachrichtenoffizier
+docker run -d --name bot-nachrichtenoffizier \
+  --env-file .env \
+  -v $(pwd)/data:/app/data \
+  nachrichtenoffizier
 ```
+
+**Wichtig:** Die Datenbank wird in `./data/botdata.sqlite` gespeichert und persistiert über Container-Neustarts hinweg.
 
