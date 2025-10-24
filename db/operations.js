@@ -103,7 +103,7 @@ function setConfig(key, value) {
   });
 }
 
-export {
+export default {
   deleteTopicById,
   deleteEventById,
   insertTopic,
