@@ -36,15 +36,7 @@ async function syncDiscordEventsToDb(guild) {
   if (!guild?.scheduledEvents) return;
   await dbOps.clearEvents();
   // Berechne nächste Woche (Montag bis Sonntag)
-  const now = new Date();
-  const dayOfWeek = now.getDay();
-  const daysToNextMonday = (8 - dayOfWeek) % 7 || 7;
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + daysToNextMonday);
-  nextMonday.setHours(0, 0, 0, 0);
-  const nextSunday = new Date(nextMonday);
-  nextSunday.setDate(nextMonday.getDate() + 6);
-  nextSunday.setHours(23, 59, 59, 999);
+  const { nextMonday, nextSunday } = getNextWeekRange();
   const events = await guild.scheduledEvents.fetch();
   for (const event of events.values()) {
     const start = event.scheduledStartAt || event.scheduledStartTimestamp;
@@ -72,35 +64,15 @@ async function postWeeklySummary() {
       logger.info(
         'Kein Zielkanal konfiguriert (config.postChannel). Überspringe wöchentlichen Post.'
       );
-      // ...existing code...
+      return;
     }
     const channel = await client.channels.fetch(channelId).catch(() => null);
     if (!channel) {
       logger.warn('Zielkanal nicht erreichbar. Überspringe Post.');
-      // ...existing code...
+      return;
     }
     const events = await dbOps.getAllEvents();
-    const { nextMonday, nextSunday } = getNextWeekRange();
-    const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
-    const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-    const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
-    const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
-    const year = nextMonday.getFullYear();
-    let message = `**🗓 Themen & Events für die nächste Woche (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})**\n\n`;
-    if (events.length) {
-      message += '**📌 Events:**\n';
-      for (const e of events) {
-        message += createEventText(e) + '\n';
-      }
-      message += '\n';
-    } else {
-      message += '_Keine Events eingetragen._\n\n';
-    }
-    /*
-    // Themen und spontane Events werden in der Testphase nicht angezeigt
-    */
-    // message += '\n---\nWenn ihr noch Themen habt: `/thema`';
-    message += `\nAlle Events findest du hier: <#1184236432575955055>`;
+    const message = await createWeeklySummaryMessage(events);
     await channel.send({ content: message, flags: 4096 }); // SuppressEmbeds: verhindert Discord-Event-Anhänge
     // Nach dem Post löschen (Reset für nächste Woche)
     await dbOps.clearTopics();
@@ -111,7 +83,31 @@ async function postWeeklySummary() {
   }
 }
 
-// Wochenübersicht Handler
+// Erstellt die Wochenübersicht-Nachricht
+async function createWeeklySummaryMessage(events) {
+  // Sortiere Events nach Datum
+  events.sort((a, b) => new Date(a.date_text) - new Date(b.date_text));
+  const { nextMonday, nextSunday } = getNextWeekRange();
+  const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
+  const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
+  const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
+  const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
+  const year = nextMonday.getFullYear();
+  let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
+  if (events.length) {
+    message += '## 📅 Events\n';
+    for (const e of events) {
+      message += createEventText(e) + '\n';
+    }
+    message += '\n';
+  } else {
+    message += '## 📅 _Keine geplanten Events._\n\n';
+  }
+  message += `\nAlle Events findest du hier: <#1184236432575955055>`;
+  return message;
+}
+
+// Wochenübersicht Handler (für Testzwecke)
 async function handleWochenuebersicht(interaction) {
   try {
     let channel = interaction.options.getChannel('channel', false);
@@ -135,29 +131,9 @@ async function handleWochenuebersicht(interaction) {
     }
     await syncDiscordEventsToDb(interaction.guild);
     const events = await dbOps.getAllEvents();
-    const { nextMonday, nextSunday } = getNextWeekRange();
-    const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
-    const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
-    const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
-    const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
-    const year = nextMonday.getFullYear();
-    let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
-    const discordEvents = events.filter((e) => e.added_by === 'Discord-Event');
-    /*
-    // Spontane Events und Themen werden in der Testphase nicht angezeigt
-    */
-    if (discordEvents.length) {
-      message += '## 📅 Events\n';
-      for (const e of discordEvents) {
-        message += createEventText(e) + '\n';
-      }
-      message += '\n';
-    } else {
-      message += '## 📅 _Keine geplanten Events._\n\n';
-    }
-    // message += '\n---\nNeue Themen oder spontane Events für die nächste Woche? Nutzt `/thema hinzufügen` oder `/event hinzufügen`!';
-    message += `\nAlle Events findest du hier: <#1184236432575955055>`;
+    const message = await createWeeklySummaryMessage(events);
     await channel.send({ content: message });
+    await interaction.reply({ content: 'Test-Wochenübersicht gesendet.', ephemeral: true });
   } catch (err) {
     const errorMsg = handleError(err, 'Wochenübersicht');
     await interaction.reply({ content: errorMsg.message, ephemeral: true });
@@ -172,49 +148,64 @@ client.on('interactionCreate', async (interaction) => {
     const member = interaction.member;
     // Admin darf alles
     if (isAdmin(member)) {
-      if (name === 'wochenüberblick') {
-        await handleWochenuebersicht(interaction);
-        return;
-      }
-      const handler = commandRouter[name];
-      if (handler) {
-        if (name === 'events') {
-          await handler(interaction, dbOps, syncDiscordEventsToDb);
-        } else {
-          await handler(interaction, dbOps);
-        }
-      } else {
-        await interaction.reply({ content: 'Unbekannter Command.', ephemeral: true });
-      }
+      await handleAdminInteraction(interaction, name);
       return;
     }
 
     // Eventmanagement darf hinzufügen/löschen
     const eventCommands = ['thema', 'themen', 'event', 'events'];
     if (eventCommands.includes(name) && canManageEvents(member)) {
-      const handler = commandRouter[name];
-      if (handler) {
-        if (name === 'events') {
-          await handler(interaction, dbOps, syncDiscordEventsToDb);
-        } else {
-          await handler(interaction, dbOps);
-        }
-      } else {
-        await interaction.reply({ content: 'Unbekannter Command.', ephemeral: true });
-      }
+      await handleEventManagerInteraction(interaction, name);
       return;
     }
 
     // Normale User dürfen nichts
-    await interaction.reply({
-      content: 'Du hast keine Berechtigung für diesen Command.',
-      ephemeral: true,
-    });
+    await handleUnauthorizedInteraction(interaction);
   } catch (err) {
     const errorMsg = handleError(err, 'Dispatcher');
     await interaction.reply({ content: errorMsg.message, ephemeral: true });
   }
 });
+
+// Handler für Admin-Interaktionen
+async function handleAdminInteraction(interaction, name) {
+  if (name === 'wochenüberblick') {
+    await handleWochenuebersicht(interaction);
+    return;
+  }
+  const handler = commandRouter[name];
+  if (handler) {
+    if (name === 'events') {
+      await handler(interaction, dbOps, syncDiscordEventsToDb);
+    } else {
+      await handler(interaction, dbOps);
+    }
+  } else {
+    await interaction.reply({ content: 'Unbekannter Command.', ephemeral: true });
+  }
+}
+
+// Handler für Eventmanager-Interaktionen
+async function handleEventManagerInteraction(interaction, name) {
+  const handler = commandRouter[name];
+  if (handler) {
+    if (name === 'events') {
+      await handler(interaction, dbOps, syncDiscordEventsToDb);
+    } else {
+      await handler(interaction, dbOps);
+    }
+  } else {
+    await interaction.reply({ content: 'Unbekannter Command.', ephemeral: true });
+  }
+}
+
+// Handler für nicht autorisierte Interaktionen
+async function handleUnauthorizedInteraction(interaction) {
+  await interaction.reply({
+    content: 'Du hast keine Berechtigung für diesen Command.',
+    ephemeral: true,
+  });
+}
 
 client.login(token);
 

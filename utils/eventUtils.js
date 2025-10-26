@@ -1,5 +1,12 @@
 // utils/eventUtils.js
 
+function getWeekdayAbbrev(dateText) {
+  if (!dateText) return '';
+  const date = new Date(dateText);
+  const weekdays = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
+  return weekdays[date.getDay()];
+}
+
 function createEventText(e) {
   const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
   let eventLink = '';
@@ -14,7 +21,8 @@ function createEventText(e) {
   if (dateText) {
     dateText = dateText.replace(/(\d{2}:\d{2}):\d{2}/, '$1');
   }
-  return `• ${eventText}${dateText ? ' — ' + dateText : ''}`;
+  const weekday = getWeekdayAbbrev(e.date_text);
+  return `• ${weekday} ${eventText}${dateText ? ' — ' + dateText : ''}`;
 }
 
 export { createEventText };
