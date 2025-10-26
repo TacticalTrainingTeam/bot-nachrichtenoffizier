@@ -13,4 +13,11 @@ function getNextWeekRange() {
   return { nextMonday, nextSunday };
 }
 
-export { getNextWeekRange };
+function getWeekdayAbbrev(dateText) {
+  if (!dateText) return '';
+  const date = new Date(dateText);
+  const weekdays = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
+  return weekdays[date.getDay()];
+}
+
+export { getNextWeekRange, getWeekdayAbbrev };
