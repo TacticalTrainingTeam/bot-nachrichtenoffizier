@@ -13,9 +13,23 @@ function getNextWeekRange() {
   return { nextMonday, nextSunday };
 }
 
+
+// Wandelt einen deutschen Datumsstring wie "28.10.2025, 19:30:00" in ein Date-Objekt um
+function parseGermanDateTime(dateText) {
+  if (!dateText) return null;
+  // Format: DD.MM.YYYY, HH:MM[:SS]
+  const match = dateText.match(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})(?::(\d{2}))?/);
+  if (!match) return null;
+  const [, day, month, year, hour, minute, second] = match;
+  // JS Date: YYYY-MM-DDTHH:mm:ss
+  const iso = `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
+  return new Date(iso);
+}
+
 function getWeekdayAbbrev(dateText) {
   if (!dateText) return '';
-  const date = new Date(dateText);
+  const date = parseGermanDateTime(dateText);
+  if (!date || Number.isNaN(date.getTime())) return '';
   const weekdays = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
   return weekdays[date.getDay()];
 }
