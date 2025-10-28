@@ -10,7 +10,7 @@ export default async function handleEvents(interaction, dbOps, syncDiscordEvents
       return;
     }
     if (sub === 'aufräumen') {
-      await syncDiscordEventsToDb(interaction.guild);
+      await syncDiscordEventsToDb(interaction.guild, dbOps);
       await interaction.reply({
         content: '✅ Die Discord-Eventliste wurde synchronisiert.',
         ephemeral: true,
