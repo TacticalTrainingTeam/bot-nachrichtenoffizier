@@ -1,5 +1,6 @@
 import { getNextWeekRange } from './utils/dateUtils.js';
 import { createEventText } from './utils/eventUtils.js';
+import { syncDiscordEventsToDb } from './utils/discordSync.js';
 
 import 'dotenv/config';
 import cron from 'node-cron';
@@ -31,31 +32,6 @@ const client = new Client({
 
 migrate();
 
-// Synchronisiert Discord-Events der kommenden Woche mit der Datenbank
-async function syncDiscordEventsToDb(guild) {
-  if (!guild?.scheduledEvents) return;
-  await dbOps.clearEvents();
-  // Berechne nächste Woche (Montag bis Sonntag)
-  const { nextMonday, nextSunday } = getNextWeekRange();
-  const events = await guild.scheduledEvents.fetch();
-  for (const event of events.values()) {
-    const start = event.scheduledStartAt || event.scheduledStartTimestamp;
-    if (!start) continue;
-    const startDate = new Date(start);
-    const startBerlin = new Date(startDate.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
-    if (startBerlin >= nextMonday && startBerlin <= nextSunday) {
-      const berlinTime = startDate.toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
-      await dbOps.insertEvent(
-        event.name,
-        event.description || '',
-        event.location || '',
-        berlinTime,
-        'Discord-Event',
-        event.id
-      );
-    }
-  }
-}
 
 async function postWeeklySummary() {
   try {
@@ -129,7 +105,7 @@ async function handleWochenuebersicht(interaction) {
         return;
       }
     }
-    await syncDiscordEventsToDb(interaction.guild);
+  await syncDiscordEventsToDb(interaction.guild, dbOps);
     const events = await dbOps.getAllEvents();
     const message = await createWeeklySummaryMessage(events);
     await channel.send({ content: message });
@@ -176,7 +152,7 @@ async function handleAdminInteraction(interaction, name) {
   const handler = commandRouter[name];
   if (handler) {
     if (name === 'events') {
-      await handler(interaction, dbOps, syncDiscordEventsToDb);
+  await handler(interaction, dbOps, syncDiscordEventsToDb);
     } else {
       await handler(interaction, dbOps);
     }
@@ -190,7 +166,7 @@ async function handleEventManagerInteraction(interaction, name) {
   const handler = commandRouter[name];
   if (handler) {
     if (name === 'events') {
-      await handler(interaction, dbOps, syncDiscordEventsToDb);
+  await handler(interaction, dbOps, syncDiscordEventsToDb);
     } else {
       await handler(interaction, dbOps);
     }
