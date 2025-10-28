@@ -13,24 +13,19 @@ function getNextWeekRange() {
   return { nextMonday, nextSunday };
 }
 
-// Wandelt einen deutschen Datumsstring wie "28.10.2025, 19:30:00" in ein Date-Objekt um
+// Parst deutschen Datumsstring "D.M.YYYY, H:MM[:SS]" zu Date (ein-/zweistellig)
 function parseGermanDateTime(dateText) {
   if (!dateText) return null;
-  // Format: DD.MM.YYYY, HH:MM[:SS]
-  const match = dateText.match(/(\d{2})\.(\d{2})\.(\d{4}), (\d{2}):(\d{2})(?::(\d{2}))?/);
+  const match = dateText.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/);
   if (!match) return null;
-  const [, day, month, year, hour, minute, second] = match;
-  // JS Date: YYYY-MM-DDTHH:mm:ss
-  const iso = `${year}-${month}-${day}T${hour}:${minute}:${second || '00'}`;
-  return new Date(iso);
+  const [day, month, year, hour, minute, second] = match.slice(1).map((s, i) => i < 5 ? s.padStart(2, '0') : s || '00');
+  return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
 }
 
 function getWeekdayAbbrev(dateText) {
-  if (!dateText) return '';
   const date = parseGermanDateTime(dateText);
   if (!date || Number.isNaN(date.getTime())) return '';
-  const weekdays = ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'];
-  return weekdays[date.getDay()];
+  return ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'][date.getDay()];
 }
 
 export { getNextWeekRange, getWeekdayAbbrev };
