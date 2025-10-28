@@ -1,5 +1,5 @@
 # Dockerfile for Node.js Discord Bot
-FROM node:20-alpine
+FROM node:lts-jod
 
 # Install pnpm and create directories
 RUN npm install -g pnpm && \

@@ -16,12 +16,16 @@ function createEventText(e) {
   }
 
   const weekday = getWeekdayAbbrev(e.date_text);
+<<<<<<< HEAD
   // Extrahiere Tag, Monat und Uhrzeit (ohne Jahreszahl, ohne Sekunden)
   const match = e.date_text.match(/(\d{2})\.(\d{2})\.\d{4}, (\d{2}:\d{2})/);
   let dateText = e.date_text;
   if (match) {
     dateText = `${match[1]}.${match[2]}. ${match[3]} Uhr`;
   }
+=======
+  const dateText = e.date_text.replace(/, (\d{2}:\d{2}):\d{2}/, ' $1');
+>>>>>>> origin/main
   return `${weekday} ${dateText} - ${eventText}`;
 }
 

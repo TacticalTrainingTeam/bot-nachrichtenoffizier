@@ -13,7 +13,6 @@ function getNextWeekRange() {
   return { nextMonday, nextSunday };
 }
 
-
 // Wandelt einen deutschen Datumsstring wie "28.10.2025, 19:30:00" in ein Date-Objekt um
 function parseGermanDateTime(dateText) {
   if (!dateText) return null;
