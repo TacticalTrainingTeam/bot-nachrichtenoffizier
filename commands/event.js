@@ -1,4 +1,3 @@
-// commands/event.js
 import Joi from 'joi';
 import { handleError } from '../utils/errorHandler.js';
 

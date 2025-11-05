@@ -1,5 +1,3 @@
-// utils/dateUtils.js
-
 function getNextWeekRange() {
   const now = new Date();
   const dayOfWeek = now.getDay();
@@ -13,12 +11,19 @@ function getNextWeekRange() {
   return { nextMonday, nextSunday };
 }
 
-// Parst deutschen Datumsstring "D.M.YYYY, H:MM[:SS]" zu Date (ein-/zweistellig)
+/**
+ * Parses German date format "D.M.YYYY, H:MM[:SS]" to Date object
+ * Supports both single and double-digit day/month/hour/minute values
+ * @param {string} dateText - Date string in German format
+ * @returns {Date|null} Parsed date or null if invalid
+ */
 function parseGermanDateTime(dateText) {
   if (!dateText) return null;
   const match = dateText.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/);
   if (!match) return null;
-  const [day, month, year, hour, minute, second] = match.slice(1).map((s, i) => i < 5 ? s.padStart(2, '0') : s || '00');
+  const [day, month, year, hour, minute, second] = match
+    .slice(1)
+    .map((s, i) => (i < 5 ? s.padStart(2, '0') : s || '00'));
   return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
 }
 
