@@ -1,4 +1,3 @@
-// commands/config.js
 import { handleError } from '../utils/errorHandler.js';
 
 export default async function handleConfig(interaction, dbOps) {

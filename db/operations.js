@@ -1,4 +1,3 @@
-// db/operations.js
 import { db } from './db.js';
 
 function deleteTopicById(id) {
@@ -50,7 +49,14 @@ function clearTopics() {
   });
 }
 
-function insertEvent(title, description, location, dateText, addedBy, discordEventId = null) {
+function insertEvent(
+  title,
+  dateText = null,
+  addedBy = null,
+  description = null,
+  location = null,
+  discordEventId = null
+) {
   return new Promise((resolve, reject) => {
     db.run(
       'INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)',
@@ -96,7 +102,7 @@ function setConfig(key, value) {
       'INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)',
       [key, value],
       function (err) {
-      if (err) reject(new Error(err));
+        if (err) reject(new Error(err));
         else resolve();
       }
     );

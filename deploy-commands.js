@@ -1,11 +1,8 @@
-// deploy-commands.js
-
 import 'dotenv/config';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import logger from './utils/logger.js';
 
-// Discord API Typen als Konstante
 const TYPES = {
   SUB_COMMAND: 1,
   STRING: 3,
@@ -73,17 +70,6 @@ const commands = [
     ],
   },
   {
-    name: 'themen',
-    description: 'Verwalte alle Themen',
-    options: [
-      {
-        name: 'löschen',
-        type: TYPES.SUB_COMMAND,
-        description: 'Lösche alle Themen',
-      },
-    ],
-  },
-  {
     name: 'event',
     description: 'Verwalte ein einzelnes Event',
     options: [
@@ -117,18 +103,18 @@ const commands = [
     ],
   },
   {
-    name: 'events',
-    description: 'Verwalte alle Events',
+    name: 'aufräumen',
+    description: 'Verwalte und synchronisiere Themen & Events',
     options: [
       {
-        name: 'löschen',
+        name: 'datenbank',
         type: TYPES.SUB_COMMAND,
-        description: 'Lösche alle Events',
+        description: 'Lösche alle Themen und Events aus der Datenbank',
       },
       {
-        name: 'aufräumen',
+        name: 'discord-sync',
         type: TYPES.SUB_COMMAND,
-        description: 'Synchronisiere die Discord-Eventliste',
+        description: 'Synchronisiere Discord-Events in die Datenbank',
       },
     ],
   },
@@ -149,9 +135,30 @@ const commands = [
 const rest = new REST({ version: '10' }).setToken(token);
 
 try {
-  logger.info('Registriere globale Commands...');
+  logger.info('Deleting old commands...');
+
+  // Delete all global commands
+  await rest.put(Routes.applicationCommands(clientId), { body: [] });
+  logger.info('Old global commands deleted.');
+
+  // Fetch all guilds and delete guild-specific commands
+  try {
+    const guilds = await rest.get(Routes.userGuilds());
+    logger.info(`Bot is in ${guilds.length} guild(s). Deleting guild-specific commands...`);
+
+    for (const guild of guilds) {
+      await rest.put(Routes.applicationGuildCommands(clientId, guild.id), { body: [] });
+      logger.info(`✓ Guild commands deleted: ${guild.name} (${guild.id})`);
+    }
+  } catch (error) {
+    logger.warn('Could not delete guild-specific commands:', error.message);
+  }
+
+  // Register new commands globally
+  logger.info('Registering new global commands...');
   await rest.put(Routes.applicationCommands(clientId), { body: commands });
-  logger.info('Slash-Commands global registriert.');
+  logger.info('✅ Slash commands successfully registered.');
 } catch (err) {
   logger.error('Fehler beim Registrieren der Commands:', err);
+  process.exit(1);
 }

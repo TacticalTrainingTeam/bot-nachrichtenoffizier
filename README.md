@@ -1,36 +1,50 @@
 # Bot-Nachrichtenoffizier
 
-A TTT-Discord bot for weekly event and topic overviews.
+A Discord bot for TTT (Tactical Training Team) that manages weekly event and topic overviews.
 
 ## Features
-- Weekly overview (events & topics)
+- Automated weekly summaries (events & topics)
 - Slash commands for event/topic management
-- Role-based permissions
+- Role-based permissions (Admin & Event Manager)
+- Discord event synchronization
+- Scheduled cron-based posting
 
 ## Installation
+
 ```bash
 git clone https://github.com/TacticalTrainingTeam/bot-nachrichtenoffizier.git
 cd bot-nachrichtenoffizier
 pnpm install
 ```
 
+## Configuration
+
+Create a `.env` file based on `.env.example`:
+- `DISCORD_TOKEN` - Bot token from Discord Developer Portal
+- `CLIENT_ID` - Application client ID
+- `POST_CRON` - Cron expression for weekly posts (e.g., `0 19 * * SUN`)
+- `TIMEZONE` - Timezone for cron jobs (default: `Europe/Berlin`)
+
 ## Usage
-Set environment variables in `.env`:
-- `DISCORD_TOKEN` (bot token)
-- `CLIENT_ID` (client ID)
+
+Deploy slash commands:
+```bash
+pnpm run deploy-commands
+```
 
 Start the bot:
 ```bash
 pnpm start
 ```
 
-## Docker
-### Mit Docker Compose (empfohlen):
+## Docker Deployment
+
+### Using Docker Compose (recommended):
 ```bash
 docker-compose up -d
 ```
 
-### Mit Docker direkt:
+### Using Docker directly:
 ```bash
 docker build -t nachrichtenoffizier .
 docker run -d --name bot-nachrichtenoffizier \
@@ -39,5 +53,20 @@ docker run -d --name bot-nachrichtenoffizier \
   nachrichtenoffizier
 ```
 
-**Wichtig:** Die Datenbank wird in `./data/botdata.sqlite` gespeichert und persistiert über Container-Neustarts hinweg.
+**Note:** The database is stored in `./data/botdata.sqlite` and persists across container restarts.
+
+## Commands
+
+- `/config channel` - Set target channel for weekly posts
+- `/thema hinzufügen` - Add a topic
+- `/thema löschen` - Delete a topic by ID
+- `/event hinzufügen` - Add an event
+- `/event löschen` - Delete an event by ID
+- `/aufräumen datenbank` - Clear all topics and events
+- `/aufräumen discord-sync` - Sync Discord events to database
+- `/wochenüberblick` - Post a test weekly summary
+
+## License
+
+See [LICENSE](LICENSE) file for details.
 

@@ -1,5 +1,5 @@
-// db.js
 import sqlite3 from 'sqlite3';
+
 const dbFile = process.env.DB_FILE || './data/botdata.sqlite';
 const db = new sqlite3.Database(dbFile);
 

@@ -1,4 +1,3 @@
-// permissions.js
 import { PermissionsBitField } from 'discord.js';
 
 const ROLES = {
