@@ -61,7 +61,6 @@ async function postWeeklySummary() {
 }
 
 async function createWeeklySummaryMessage(events) {
-  events.sort((a, b) => new Date(a.date_text) - new Date(b.date_text));
   const { nextMonday, nextSunday } = getNextWeekRange();
   const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
   const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
@@ -69,14 +68,33 @@ async function createWeeklySummaryMessage(events) {
   const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
   const year = nextMonday.getFullYear();
   let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
-  if (events.length) {
+  const eventsWithDate = events
+    .filter((e) => e.date_text && !e.added_by)
+    .sort((a, b) => new Date(a.date_text) - new Date(b.date_text));
+  const eventsWithoutDate = events
+    .filter((e) => e.added_by)
+    .sort((a, b) => a.title.localeCompare(b.title));
+  const topics = await dbOps.getAllTopics();
+  if (eventsWithDate.length) {
     message += '## 📅 Events\n';
-    for (const e of events) {
+    for (const e of eventsWithDate) {
       message += createEventText(e) + '\n';
     }
     message += '\n';
   } else {
     message += '## 📅 _Keine geplanten Events._\n\n';
+  }
+  if (eventsWithoutDate.length || topics.length) {
+    message += '## Weiteres\n';
+    for (const e of eventsWithoutDate) {
+      message += createEventText(e) + ' (' + e.added_by + ')\n';
+    }
+    for (const t of topics) {
+      message += ` - ${t.text} (${t.user})\n`;
+    }
+    message += '\n';
+  } else {
+    message += '## Weiteres\n_Keine spontanen Events oder Themen eingereicht._\n\n';
   }
   message += `\nAlle Arma-Events findest du hier: <#1184236432575955055>\n||<@&1435610059865325619>||`;
   return message;
