@@ -69,10 +69,10 @@ async function createWeeklySummaryMessage(events) {
   const year = nextMonday.getFullYear();
   let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
   const eventsWithDate = events
-    .filter((e) => e.date_text && !e.added_by)
+    .filter((e) => e.date_text)
     .sort((a, b) => new Date(a.date_text) - new Date(b.date_text));
   const eventsWithoutDate = events
-    .filter((e) => e.added_by)
+    .filter((e) => !e.date_text && e.added_by)
     .sort((a, b) => a.title.localeCompare(b.title));
   const topics = await dbOps.getAllTopics();
   if (eventsWithDate.length) {
@@ -94,7 +94,7 @@ async function createWeeklySummaryMessage(events) {
     }
     message += '\n';
   } else {
-    message += '## Weiteres\n_Keine spontanen Events oder Themen eingereicht._\n\n';
+    message += 'Weiteres\n_Keine spontanen Events oder Themen eingereicht._\n\n';
   }
   message += `\nAlle Arma-Events findest du hier: <#1184236432575955055>\n||<@&1435610059865325619>||`;
   return message;

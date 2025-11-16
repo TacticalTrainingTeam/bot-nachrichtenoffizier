@@ -23,7 +23,7 @@ async function syncDiscordEventsToDb(guild, dbOps) {
       await dbOps.insertEvent(
         event.name,
         berlinTime,
-        'Discord-Event',
+        null,
         event.description || '',
         event.location || '',
         event.id
