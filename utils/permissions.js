@@ -3,6 +3,7 @@ import { PermissionsBitField } from 'discord.js';
 const ROLES = {
   TECHNIK: '406217855860867072',
   EVENTMANAGEMENT: '1059523777584705596',
+  OFFIZIER: '121534211822714880',
 };
 
 function isAdmin(member) {
@@ -13,7 +14,10 @@ function isAdmin(member) {
 }
 
 function isEventManager(member) {
-  return member?.roles?.cache?.has(ROLES.EVENTMANAGEMENT);
+  return (
+    member?.roles?.cache?.has(ROLES.EVENTMANAGEMENT) ||
+    member?.roles?.cache?.has(ROLES.OFFIZIER)
+  );
 }
 
 function canManageEvents(member) {
