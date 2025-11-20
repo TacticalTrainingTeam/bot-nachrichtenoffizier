@@ -85,7 +85,7 @@ async function createWeeklySummaryMessage(events) {
     message += '## 📅 _Keine geplanten Events._\n\n';
   }
   if (eventsWithoutDate.length || topics.length) {
-    message += '## Weiteres\n';
+    message += '## 💡 Sonstiges\n';
     for (const e of eventsWithoutDate) {
       message += createEventText(e) + ' (' + e.added_by + ')\n';
     }
@@ -93,8 +93,6 @@ async function createWeeklySummaryMessage(events) {
       message += ` - ${t.text} (${t.user})\n`;
     }
     message += '\n';
-  } else {
-    message += 'Weiteres\n_Keine spontanen Events oder Themen eingereicht._\n\n';
   }
   message += `\nAlle Arma-Events findest du hier: <#1184236432575955055>\n||<@&1435610059865325619>||`;
   return message;
