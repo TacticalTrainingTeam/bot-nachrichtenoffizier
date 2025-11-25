@@ -1,0 +1,47 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "reviewers": [
+    "TheConen",
+    "MenomDE"
+  ],
+  "assignees": [
+    "TheConen",
+    "MenomDE"
+  ],
+  "enabledManagers": [
+    "npm",
+    "dockerfile"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": [
+        "npm"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "groupName": "devDependencies"
+    },
+    {
+      "matchManagers": [
+        "npm"
+      ],
+      "matchPackagePatterns": [
+        "^@types/"
+      ],
+      "groupName": "typescript typings"
+    },
+    {
+      "matchManagers": [
+        "dockerfile"
+      ],
+      "groupName": "docker base image"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  }
+}
