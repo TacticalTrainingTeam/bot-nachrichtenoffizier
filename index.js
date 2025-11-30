@@ -39,6 +39,12 @@ migrate();
  */
 async function postWeeklySummary() {
   try {
+    const guild = client.guilds.cache.first();
+    if (guild) {
+      await syncDiscordEventsToDb(guild, dbOps);
+    } else {
+      logger.warn('No guild found for event sync.');
+    }
     const channelId = await dbOps.getConfig('postChannel');
     if (!channelId) {
       logger.info('No target channel configured. Skipping weekly post.');
