@@ -439,3 +439,4 @@ yarn-error.log
 testem.log
 /typings
 Thumbs.db
+package-lock.json

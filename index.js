@@ -1,4 +1,4 @@
-import { getNextWeekRange } from './utils/dateUtils.js';
+import { getNextWeekRange, parseGermanDateTime } from './utils/dateUtils.js';
 import { createEventText } from './utils/eventUtils.js';
 import { syncDiscordEventsToDb } from './utils/discordSync.js';
 
@@ -76,7 +76,12 @@ async function createWeeklySummaryMessage(events) {
   let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
   const eventsWithDate = events
     .filter((e) => e.date_text)
-    .sort((a, b) => new Date(a.date_text) - new Date(b.date_text));
+    .sort((a, b) => {
+      const dateA = parseGermanDateTime(a.date_text);
+      const dateB = parseGermanDateTime(b.date_text);
+      if (!dateA || !dateB) return 0;
+      return dateA.getTime() - dateB.getTime();
+    });
   const eventsWithoutDate = events
     .filter((e) => !e.date_text && e.added_by)
     .sort((a, b) => a.title.localeCompare(b.title));
