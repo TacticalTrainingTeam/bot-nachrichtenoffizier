@@ -33,4 +33,4 @@ function getWeekdayAbbrev(dateText) {
   return ['So.', 'Mo.', 'Di.', 'Mi.', 'Do.', 'Fr.', 'Sa.'][date.getDay()];
 }
 
-export { getNextWeekRange, getWeekdayAbbrev };
+export { getNextWeekRange, getWeekdayAbbrev, parseGermanDateTime };
