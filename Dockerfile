@@ -12,14 +12,11 @@ WORKDIR /app
 # Switch to non-root user
 USER node
 
-# Copy package files
-COPY --chown=node:node package*.json pnpm-lock.yaml* ./
+# Copy source code
+COPY --chown=node:node . .
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile --prod
-
-# Copy source code
-COPY --chown=node:node . .
 
 # Create volume for database persistence
 VOLUME ["/app/data"]
