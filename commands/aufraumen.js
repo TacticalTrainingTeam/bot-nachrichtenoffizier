@@ -1,6 +1,6 @@
 import { handleError } from '../utils/errorHandler.js';
 
-export default async function handleAufraumen(interaction, dbOps, syncDiscordEventsToDb) {
+export default async function handleAufraumen(interaction, { dbOps, syncDiscordEventsToDb }) {
   try {
     const sub = interaction.options.getSubcommand();
 

@@ -15,8 +15,7 @@ function isAdmin(member) {
 
 function isEventManager(member) {
   return (
-    member?.roles?.cache?.has(ROLES.EVENTMANAGEMENT) ||
-    member?.roles?.cache?.has(ROLES.OFFIZIER)
+    member?.roles?.cache?.has(ROLES.EVENTMANAGEMENT) || member?.roles?.cache?.has(ROLES.OFFIZIER)
   );
 }
 

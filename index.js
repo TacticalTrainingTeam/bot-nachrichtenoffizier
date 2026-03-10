@@ -56,7 +56,8 @@ async function postWeeklySummary() {
       return;
     }
     const events = await dbOps.getAllEvents();
-    const message = await createWeeklySummaryMessage(events);
+    const topics = await dbOps.getAllTopics();
+    const message = createWeeklySummaryMessage(events, topics);
     await channel.send({ content: message, flags: 4096 }); // SuppressEmbeds flag
     await dbOps.clearTopics();
     await dbOps.clearEvents();
@@ -66,7 +67,7 @@ async function postWeeklySummary() {
   }
 }
 
-async function createWeeklySummaryMessage(events) {
+function createWeeklySummaryMessage(events, topics) {
   const { nextMonday, nextSunday } = getNextWeekRange();
   const mondayDay = nextMonday.getDate().toString().padStart(2, '0');
   const sundayDay = nextSunday.getDate().toString().padStart(2, '0');
@@ -85,7 +86,6 @@ async function createWeeklySummaryMessage(events) {
   const eventsWithoutDate = events
     .filter((e) => !e.date_text && e.added_by)
     .sort((a, b) => a.title.localeCompare(b.title));
-  const topics = await dbOps.getAllTopics();
   if (eventsWithDate.length) {
     message += '## 📅 Events\n';
     for (const e of eventsWithDate) {
@@ -107,38 +107,6 @@ async function createWeeklySummaryMessage(events) {
   }
   message += `\nAlle Arma-Events findest du hier: <#1184236432575955055>\n||<@&1435610059865325619>||`;
   return message;
-}
-
-async function handleWochenuebersicht(interaction) {
-  try {
-    let channel = interaction.options.getChannel('channel', false);
-    if (!channel) {
-      const channelId = await dbOps.getConfig('postChannel');
-      if (!channelId) {
-        await interaction.reply({
-          content: 'Kein Zielkanal konfiguriert. Bitte zuerst mit /config setzen.',
-          ephemeral: true,
-        });
-        return;
-      }
-      channel = await client.channels.fetch(channelId).catch(() => null);
-      if (!channel) {
-        await interaction.reply({
-          content: 'Konfigurierter Kanal nicht erreichbar.',
-          ephemeral: true,
-        });
-        return;
-      }
-    }
-    await syncDiscordEventsToDb(interaction.guild, dbOps);
-    const events = await dbOps.getAllEvents();
-    const message = await createWeeklySummaryMessage(events);
-    await channel.send({ content: message });
-    await interaction.reply({ content: 'Test-Wochenübersicht gesendet.', ephemeral: true });
-  } catch (err) {
-    const errorMsg = handleError(err, 'Wochenübersicht');
-    await interaction.reply({ content: errorMsg.message, ephemeral: true });
-  }
 }
 
 client.on('interactionCreate', async (interaction) => {
@@ -165,17 +133,14 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 async function handleAuthorizedInteraction(interaction, name) {
-  if (name === 'wochenüberblick') {
-    await handleWochenuebersicht(interaction);
-    return;
-  }
   const handler = commandRouter[name];
   if (handler) {
-    if (name === 'aufräumen') {
-      await handler(interaction, dbOps, syncDiscordEventsToDb);
-    } else {
-      await handler(interaction, dbOps);
-    }
+    await handler(interaction, {
+      dbOps,
+      client,
+      syncDiscordEventsToDb,
+      createWeeklySummaryMessage,
+    });
   } else {
     await interaction.reply({ content: 'Unbekannter Command.', ephemeral: true });
   }

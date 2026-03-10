@@ -1,5 +1,7 @@
 import { getNextWeekRange } from './dateUtils.js';
 
+const timezone = process.env.TIMEZONE || 'Europe/Berlin';
+
 /**
  * Syncs Discord scheduled events for the upcoming week to database
  * Clears existing events and fetches new ones from guild
@@ -16,13 +18,12 @@ async function syncDiscordEventsToDb(guild, dbOps) {
     const start = event.scheduledStartAt || event.scheduledStartTimestamp;
     if (!start) continue;
     const startDate = new Date(start);
-    // Convert to Berlin timezone for comparison
-    const startBerlin = new Date(startDate.toLocaleString('en-US', { timeZone: 'Europe/Berlin' }));
-    if (startBerlin >= nextMonday && startBerlin <= nextSunday) {
-      const berlinTime = startDate.toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
+    const startLocal = new Date(startDate.toLocaleString('en-US', { timeZone: timezone }));
+    if (startLocal >= nextMonday && startLocal <= nextSunday) {
+      const localTime = startDate.toLocaleString('de-DE', { timeZone: timezone });
       await dbOps.insertEvent(
         event.name,
-        berlinTime,
+        localTime,
         null,
         event.description || '',
         event.location || '',

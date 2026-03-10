@@ -1,6 +1,9 @@
 import sqlite3 from 'sqlite3';
+import { mkdirSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 const dbFile = process.env.DB_FILE || './data/botdata.sqlite';
+mkdirSync(dirname(dbFile), { recursive: true });
 const db = new sqlite3.Database(dbFile);
 
 function migrate() {

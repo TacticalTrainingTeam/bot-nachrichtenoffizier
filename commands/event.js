@@ -6,7 +6,7 @@ const eventSchema = Joi.object({
   dateText: Joi.string().optional(),
 });
 
-export default async function handleEvent(interaction, dbOps) {
+export default async function handleEvent(interaction, { dbOps }) {
   try {
     const sub = interaction.options.getSubcommand();
     if (sub === 'hinzufügen') {

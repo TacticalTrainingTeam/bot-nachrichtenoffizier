@@ -1,53 +1,41 @@
 import { db } from './db.js';
 
-function deleteTopicById(id) {
-  return new Promise((resolve, reject) => {
-    db.run('DELETE FROM topics WHERE id = ?', [id], function (err) {
+const run = (sql, params = []) =>
+  new Promise((resolve, reject) =>
+    db.run(sql, params, function (err) {
       if (err) reject(new Error(err));
-      else resolve();
-    });
-  });
-}
+      else resolve(this);
+    })
+  );
 
-function deleteEventById(id) {
-  return new Promise((resolve, reject) => {
-    db.run('DELETE FROM events WHERE id = ?', [id], function (err) {
+const get = (sql, params = []) =>
+  new Promise((resolve, reject) =>
+    db.get(sql, params, (err, row) => {
       if (err) reject(new Error(err));
-      else resolve();
-    });
-  });
-}
+      else resolve(row);
+    })
+  );
 
-function insertTopic(user, userId, text) {
-  return new Promise((resolve, reject) => {
-    db.run(
-      'INSERT INTO topics (user, userId, text) VALUES (?, ?, ?)',
-      [user, userId, text],
-      function (err) {
-        if (err) reject(new Error(err));
-        else resolve(this.lastID);
-      }
-    );
-  });
-}
-
-function getAllTopics() {
-  return new Promise((resolve, reject) => {
-    db.all('SELECT * FROM topics ORDER BY created_at ASC', [], (err, rows) => {
+const all = (sql, params = []) =>
+  new Promise((resolve, reject) =>
+    db.all(sql, params, (err, rows) => {
       if (err) reject(new Error(err));
       else resolve(rows);
-    });
-  });
-}
+    })
+  );
 
-function clearTopics() {
-  return new Promise((resolve, reject) => {
-    db.run('DELETE FROM topics', [], function (err) {
-      if (err) reject(new Error(err));
-      else resolve();
-    });
-  });
-}
+const deleteTopicById = (id) => run('DELETE FROM topics WHERE id = ?', [id]);
+
+const deleteEventById = (id) => run('DELETE FROM events WHERE id = ?', [id]);
+
+const insertTopic = (user, userId, text) =>
+  run('INSERT INTO topics (user, userId, text) VALUES (?, ?, ?)', [user, userId, text]).then(
+    (ctx) => ctx.lastID
+  );
+
+const getAllTopics = () => all('SELECT * FROM topics ORDER BY created_at ASC');
+
+const clearTopics = () => run('DELETE FROM topics');
 
 function insertEvent(
   title,
@@ -57,57 +45,21 @@ function insertEvent(
   location = null,
   discordEventId = null
 ) {
-  return new Promise((resolve, reject) => {
-    db.run(
-      'INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)',
-      [title, description, location, dateText, addedBy, discordEventId],
-      function (err) {
-        if (err) reject(new Error(err));
-        else resolve(this.lastID);
-      }
-    );
-  });
+  return run(
+    'INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)',
+    [title, description, location, dateText, addedBy, discordEventId]
+  ).then((ctx) => ctx.lastID);
 }
 
-function getAllEvents() {
-  return new Promise((resolve, reject) => {
-    db.all('SELECT * FROM events ORDER BY date_text ASC', [], (err, rows) => {
-      if (err) reject(new Error(err));
-      else resolve(rows);
-    });
-  });
-}
+const getAllEvents = () => all('SELECT * FROM events ORDER BY date_text ASC');
 
-function clearEvents() {
-  return new Promise((resolve, reject) => {
-    db.run('DELETE FROM events', [], function (err) {
-      if (err) reject(new Error(err));
-      else resolve();
-    });
-  });
-}
+const clearEvents = () => run('DELETE FROM events');
 
-function getConfig(key) {
-  return new Promise((resolve, reject) => {
-    db.get('SELECT value FROM config WHERE key = ?', [key], (err, row) => {
-      if (err) reject(new Error(err));
-      else resolve(row ? row.value : null);
-    });
-  });
-}
+const getConfig = (key) =>
+  get('SELECT value FROM config WHERE key = ?', [key]).then((row) => (row ? row.value : null));
 
-function setConfig(key, value) {
-  return new Promise((resolve, reject) => {
-    db.run(
-      'INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)',
-      [key, value],
-      function (err) {
-        if (err) reject(new Error(err));
-        else resolve();
-      }
-    );
-  });
-}
+const setConfig = (key, value) =>
+  run('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)', [key, value]);
 
 export default {
   deleteTopicById,

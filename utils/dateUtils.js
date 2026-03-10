@@ -1,9 +1,11 @@
-function getNextWeekRange() {
+function getNextWeekRange(timezone = process.env.TIMEZONE || 'Europe/Berlin') {
   const now = new Date();
-  const dayOfWeek = now.getDay();
+  // Get current day of week in the target timezone
+  const nowLocal = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+  const dayOfWeek = nowLocal.getDay();
   const daysToNextMonday = (8 - dayOfWeek) % 7 || 7;
-  const nextMonday = new Date(now);
-  nextMonday.setDate(now.getDate() + daysToNextMonday);
+  const nextMonday = new Date(nowLocal);
+  nextMonday.setDate(nowLocal.getDate() + daysToNextMonday);
   nextMonday.setHours(0, 0, 0, 0);
   const nextSunday = new Date(nextMonday);
   nextSunday.setDate(nextMonday.getDate() + 6);
@@ -19,7 +21,7 @@ function getNextWeekRange() {
  */
 function parseGermanDateTime(dateText) {
   if (!dateText) return null;
-  const match = dateText.match(/(\d{1,2})\.(\d{1,2})\.(\d{4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  const match = /(\d{1,2})\.(\d{1,2})\.(\d{4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(dateText);
   if (!match) return null;
   const [day, month, year, hour, minute, second] = match
     .slice(1)
