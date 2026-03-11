@@ -12,7 +12,7 @@ function createEventText(e) {
 
   const weekday = getWeekdayAbbrev(e.date_text);
   // Parse and format: D.M.YYYY, H:MM[:SS] -> DD.MM. HH:MM (no year/seconds)
-  const match = /(\.\d{1,2})\.(\d{1,2})\.\d{4}, (\d{1,2}):(\d{2})(?::\d{2})?/.exec(e.date_text);
+  const match = /(\d{1,2})\.(\d{1,2})\.\d{4}, (\d{1,2}):(\d{2})(?::\d{2})?/.exec(e.date_text);
   if (!match) return `**${weekday}** ${e.date_text} - ${eventText}`;
 
   const [day, month, hour, minute] = [match[1], match[2], match[3], match[4]].map((s) =>

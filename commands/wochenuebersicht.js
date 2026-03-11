@@ -28,7 +28,7 @@ export default async function handleWochenuebersicht(
     await syncDiscordEventsToDb(interaction.guild, dbOps);
     const events = await dbOps.getAllEvents();
     const topics = await dbOps.getAllTopics();
-    const message = await createWeeklySummaryMessage(events, topics);
+    const message = createWeeklySummaryMessage(events, topics);
     await channel.send({ content: message });
     await interaction.reply({ content: 'Test-Wochenübersicht gesendet.', ephemeral: true });
   } catch (err) {
