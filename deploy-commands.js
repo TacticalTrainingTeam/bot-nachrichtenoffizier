@@ -6,6 +6,7 @@ import logger from './utils/logger.js';
 const TYPES = {
   SUB_COMMAND: 1,
   STRING: 3,
+  INTEGER: 4,
   CHANNEL: 7,
 };
 
@@ -61,7 +62,7 @@ const commands = [
         options: [
           {
             name: 'id',
-            type: 4,
+            type: TYPES.INTEGER,
             description: 'ID des zu löschenden Themas',
             required: true,
           },
@@ -94,7 +95,7 @@ const commands = [
         options: [
           {
             name: 'id',
-            type: 4,
+            type: TYPES.INTEGER,
             description: 'ID des zu löschenden Events',
             required: true,
           },

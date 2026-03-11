@@ -5,7 +5,7 @@ const themaSchema = Joi.object({
   text: Joi.string().min(3).max(140).required(),
 });
 
-export default async function handleThema(interaction, dbOps) {
+export default async function handleThema(interaction, { dbOps }) {
   try {
     const sub = interaction.options.getSubcommand();
     if (sub === 'hinzufügen') {

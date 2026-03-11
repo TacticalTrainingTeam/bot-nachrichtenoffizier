@@ -1,6 +1,6 @@
 import { handleError } from '../utils/errorHandler.js';
 
-export default async function handleConfig(interaction, dbOps) {
+export default async function handleConfig(interaction, { dbOps }) {
   try {
     const sub = interaction.options.getSubcommand();
     if (sub === 'channel') {

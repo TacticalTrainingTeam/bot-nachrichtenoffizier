@@ -27,21 +27,9 @@
     },
     {
       "matchManagers": [
-        "npm"
-      ],
-      "matchPackagePatterns": [
-        "^@types/"
-      ],
-      "groupName": "typescript typings"
-    },
-    {
-      "matchManagers": [
         "dockerfile"
       ],
       "groupName": "docker base image"
     }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true
-  }
+  ]
 }
