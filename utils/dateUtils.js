@@ -13,12 +13,6 @@ function getNextWeekRange(timezone = process.env.TIMEZONE || 'Europe/Berlin') {
   return { nextMonday, nextSunday };
 }
 
-/**
- * Parses German date format "D.M.YYYY, H:MM[:SS]" to Date object
- * Supports both single and double-digit day/month/hour/minute values
- * @param {string} dateText - Date string in German format
- * @returns {Date|null} Parsed date or null if invalid
- */
 function parseGermanDateTime(dateText) {
   if (!dateText) return null;
   const match = /(\d{1,2})\.(\d{1,2})\.(\d{4}), (\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(dateText);

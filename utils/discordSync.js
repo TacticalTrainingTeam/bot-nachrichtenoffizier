@@ -2,13 +2,6 @@ import { getNextWeekRange } from './dateUtils.js';
 
 const timezone = process.env.TIMEZONE || 'Europe/Berlin';
 
-/**
- * Syncs Discord scheduled events for the upcoming week to database
- * Clears existing events and fetches new ones from guild
- * Only includes events scheduled between next Monday 00:00 and Sunday 23:59
- * @param {Guild} guild - Discord guild object
- * @param {Object} dbOps - Database operations object
- */
 async function syncDiscordEventsToDb(guild, dbOps) {
   if (!guild?.scheduledEvents) return;
   await dbOps.clearEvents();

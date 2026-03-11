@@ -32,11 +32,6 @@ const client = new Client({
 
 migrate();
 
-/**
- * Posts weekly summary to configured channel
- * Fetches events from DB, generates message, posts it, then clears data
- * Runs automatically via cron schedule
- */
 async function postWeeklySummary() {
   try {
     const guild = client.guilds.cache.first();

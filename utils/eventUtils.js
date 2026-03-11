@@ -1,11 +1,5 @@
 import { getWeekdayAbbrev } from './dateUtils.js';
 
-/**
- * Creates formatted event text with optional link and date/time
- * Searches for tacticalteam.de event links in title, description, or location
- * @param {Object} e - Event object from database
- * @returns {string} Formatted event text
- */
 function createEventText(e) {
   const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
   const eventLink = [e.title, e.description, e.location]
