@@ -1,41 +1,19 @@
 import { db } from './db.js';
 
-const run = (sql, params = []) =>
-  new Promise((resolve, reject) =>
-    db.run(sql, params, function (err) {
-      if (err) reject(new Error(err));
-      else resolve(this);
-    })
-  );
+const deleteTopicById = (id) => db.prepare('DELETE FROM topics WHERE id = ?').run(id);
 
-const get = (sql, params = []) =>
-  new Promise((resolve, reject) =>
-    db.get(sql, params, (err, row) => {
-      if (err) reject(new Error(err));
-      else resolve(row);
-    })
-  );
+const deleteEventById = (id) => db.prepare('DELETE FROM events WHERE id = ?').run(id);
 
-const all = (sql, params = []) =>
-  new Promise((resolve, reject) =>
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(new Error(err));
-      else resolve(rows);
-    })
-  );
+const insertTopic = (user, userId, text) => {
+  const result = db
+    .prepare('INSERT INTO topics (user, userId, text) VALUES (?, ?, ?)')
+    .run(user, userId, text);
+  return Number(result.lastInsertRowid);
+};
 
-const deleteTopicById = (id) => run('DELETE FROM topics WHERE id = ?', [id]);
+const getAllTopics = () => db.prepare('SELECT * FROM topics ORDER BY created_at ASC').all();
 
-const deleteEventById = (id) => run('DELETE FROM events WHERE id = ?', [id]);
-
-const insertTopic = (user, userId, text) =>
-  run('INSERT INTO topics (user, userId, text) VALUES (?, ?, ?)', [user, userId, text]).then(
-    (ctx) => ctx.lastID
-  );
-
-const getAllTopics = () => all('SELECT * FROM topics ORDER BY created_at ASC');
-
-const clearTopics = () => run('DELETE FROM topics');
+const clearTopics = () => db.prepare('DELETE FROM topics').run();
 
 function insertEvent(
   title,
@@ -45,21 +23,25 @@ function insertEvent(
   location = null,
   discordEventId = null
 ) {
-  return run(
-    'INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)',
-    [title, description, location, dateText, addedBy, discordEventId]
-  ).then((ctx) => ctx.lastID);
+  const result = db
+    .prepare(
+      'INSERT INTO events (title, description, location, date_text, added_by, discord_event_id) VALUES (?, ?, ?, ?, ?, ?)'
+    )
+    .run(title, description, location, dateText, addedBy, discordEventId);
+  return Number(result.lastInsertRowid);
 }
 
-const getAllEvents = () => all('SELECT * FROM events ORDER BY date_text ASC');
+const getAllEvents = () => db.prepare('SELECT * FROM events ORDER BY date_text ASC').all();
 
-const clearEvents = () => run('DELETE FROM events');
+const clearEvents = () => db.prepare('DELETE FROM events').run();
 
-const getConfig = (key) =>
-  get('SELECT value FROM config WHERE key = ?', [key]).then((row) => (row ? row.value : null));
+const getConfig = (key) => {
+  const row = db.prepare('SELECT value FROM config WHERE key = ?').get(key);
+  return row ? row.value : null;
+};
 
 const setConfig = (key, value) =>
-  run('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)', [key, value]);
+  db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, value);
 
 export default {
   deleteTopicById,

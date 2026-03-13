@@ -6,11 +6,11 @@
   "packageManager": "pnpm@10.32.1",
   "main": "index.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=22.5"
   },
   "scripts": {
-    "start": "node index.js",
-    "deploy-commands": "node deploy-commands.js",
+    "start": "node --experimental-sqlite index.js",
+    "deploy-commands": "node --experimental-sqlite deploy-commands.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
@@ -22,7 +22,6 @@
     "dotenv": "^17.0.0",
     "joi": "^18.0.1",
     "node-cron": "^4.0.0",
-    "sqlite3": "^6.0.0",
     "winston": "^3.18.3"
   },
   "devDependencies": {
