@@ -19,7 +19,7 @@ importers:
         version: 14.26.3
       dotenv:
         specifier: ^17.0.0
-        version: 17.3.1
+        version: 17.4.2
       joi:
         specifier: ^18.0.1
         version: 18.1.2
@@ -257,8 +257,8 @@ packages:
     resolution: {integrity: sha512-XEKtYn28YFsiJ5l4fLRyikdbo6RD5oFyqfVHQlvXz2104JhH/E8slN28dbky05w3DCrJcNVWvhVvcJCTSl/KIg==}
     engines: {node: '>=18'}
 
-  dotenv@17.3.1:
-    resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   enabled@2.0.0:
@@ -802,7 +802,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  dotenv@17.3.1: {}
+  dotenv@17.4.2: {}
 
   enabled@2.0.0: {}
 
