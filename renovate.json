@@ -7,10 +7,6 @@
     "TheConen",
     "MenomDE"
   ],
-  "assignees": [
-    "TheConen",
-    "MenomDE"
-  ],
   "enabledManagers": [
     "npm",
     "dockerfile"
