@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { handleError } from '../utils/errorHandler.js';
 
-export default async function handleStream(interaction, { dbOps, client }) {
+export default async function handleStream(interaction) {
   try {
     const channelId = interaction.channelId;
     const messageContent = '**Streamer für dieses Event**';

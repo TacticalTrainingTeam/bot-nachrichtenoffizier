@@ -43,7 +43,14 @@ const getConfig = (key) => {
 const setConfig = (key, value) =>
   db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, value);
 
-const insertStreamer = (messageId, channelId, userId, userName, streamLocation, resolutionFps = null) => {
+const insertStreamer = (
+  messageId,
+  channelId,
+  userId,
+  userName,
+  streamLocation,
+  resolutionFps = null
+) => {
   const result = db
     .prepare(
       'INSERT INTO streamers (message_id, channel_id, user_id, user_name, stream_location, resolution_fps) VALUES (?, ?, ?, ?, ?, ?)'

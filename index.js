@@ -52,7 +52,7 @@ async function postWeeklySummary() {
     } else {
       logger.warn('No guild found for event sync.');
     }
-    const channelId = await dbOps.getConfig('postChannel');
+    const channelId = dbOps.getConfig('postChannel');
     if (!channelId) {
       logger.info('No target channel configured. Skipping weekly post.');
       return;
@@ -62,12 +62,12 @@ async function postWeeklySummary() {
       logger.warn('Target channel unreachable. Skipping post.');
       return;
     }
-    const events = await dbOps.getAllEvents();
-    const topics = await dbOps.getAllTopics();
+    const events = dbOps.getAllEvents();
+    const topics = dbOps.getAllTopics();
     const message = createWeeklySummaryMessage(events, topics);
     await channel.send({ content: message, flags: 4096 }); // SuppressEmbeds flag
-    await dbOps.clearTopics();
-    await dbOps.clearEvents();
+    dbOps.clearTopics();
+    dbOps.clearEvents();
     logger.info('Weekly summary posted and data cleared.');
   } catch (err) {
     logger.error('Error posting weekly summary:', err);
@@ -178,12 +178,8 @@ client.on('interactionCreate', async (interaction) => {
         .setCustomId(`stream_location_${interaction.message.id}`)
         .setPlaceholder('Wähle Stream-Ort...')
         .addOptions(
-          new StringSelectMenuOptionBuilder()
-            .setLabel('Stream Privat')
-            .setValue('privat'),
-          new StringSelectMenuOptionBuilder()
-            .setLabel('Stream TTT')
-            .setValue('ttt')
+          new StringSelectMenuOptionBuilder().setLabel('Stream Privat').setValue('privat'),
+          new StringSelectMenuOptionBuilder().setLabel('Stream TTT').setValue('ttt')
         );
 
       const actionRow = new ActionRowBuilder().addComponents(selectMenu);
@@ -196,10 +192,12 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (err) {
     logger.error('Error handling button interaction:', err);
-    await interaction.reply({
-      content: 'Ein Fehler ist aufgetreten.',
-      ephemeral: true,
-    }).catch(() => {});
+    await interaction
+      .reply({
+        content: 'Ein Fehler ist aufgetreten.',
+        ephemeral: true,
+      })
+      .catch(() => {});
   }
 });
 
@@ -230,10 +228,12 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (err) {
     logger.error('Error handling select menu interaction:', err);
-    await interaction.reply({
-      content: 'Ein Fehler ist aufgetreten.',
-      ephemeral: true,
-    }).catch(() => {});
+    await interaction
+      .reply({
+        content: 'Ein Fehler ist aufgetreten.',
+        ephemeral: true,
+      })
+      .catch(() => {});
   }
 });
 
@@ -247,10 +247,11 @@ client.on('interactionCreate', async (interaction) => {
       const messageId = customIdParts[2];
       const streamLocation = customIdParts[3];
 
-      const resolutionFps = interaction.fields.getTextInputValue('resolution_fps') || 'Nicht angegeben';
+      const resolutionFps =
+        interaction.fields.getTextInputValue('resolution_fps') || 'Nicht angegeben';
 
       // In der Datenbank speichern
-      await dbOps.insertStreamer(
+      dbOps.insertStreamer(
         messageId,
         interaction.channelId,
         interaction.user.id,
@@ -262,7 +263,7 @@ client.on('interactionCreate', async (interaction) => {
       // Ursprüngliche Nachricht aktualisieren
       const originalMessage = await interaction.channel.messages.fetch(messageId);
       if (originalMessage) {
-        const streamers = await dbOps.getStreamersByMessageId(messageId);
+        const streamers = dbOps.getStreamersByMessageId(messageId);
         const streamerList = streamers
           .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
           .join('\n');
@@ -292,10 +293,12 @@ client.on('interactionCreate', async (interaction) => {
     }
   } catch (err) {
     logger.error('Error handling modal submission:', err);
-    await interaction.reply({
-      content: 'Ein Fehler ist aufgetreten.',
-      ephemeral: true,
-    }).catch(() => {});
+    await interaction
+      .reply({
+        content: 'Ein Fehler ist aufgetreten.',
+        ephemeral: true,
+      })
+      .catch(() => {});
   }
 });
 
