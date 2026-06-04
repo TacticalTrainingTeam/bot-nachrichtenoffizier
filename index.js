@@ -44,6 +44,65 @@ const client = new Client({
 
 migrate();
 
+async function restoreStreamerMessages() {
+  try {
+    // Hole alle Stream-Messages
+    const streamMessages = dbOps.getAllStreamMessages();
+
+    for (const row of streamMessages) {
+      try {
+        const channel = await client.channels.fetch(row.channel_id).catch(() => null);
+        if (!channel) continue;
+
+        const message = await channel.messages.fetch(row.message_id).catch(() => null);
+        if (!message) continue;
+
+        // Hole alle Streamer für diese Nachricht
+        const streamers = dbOps.getStreamersByMessageId(row.message_id);
+        const components = [];
+
+        if (streamers.length > 0) {
+          for (const s of streamers) {
+            const removeButton = new ButtonBuilder()
+              .setCustomId(`stream_remove_${row.message_id}_${s.user_id}`)
+              .setLabel(`Abmelden: ${s.user_name}`)
+              .setStyle(ButtonStyle.Danger);
+
+            const actionRow = new ActionRowBuilder().addComponents(removeButton);
+            components.push(actionRow);
+          }
+        }
+
+        const streamerList = streamers
+          .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
+          .join('\n');
+
+        const updatedContent = `**Streamer für dieses Event**\n\n${
+          streamerList || '_Noch keine Streamer registriert._'
+        }`;
+
+        const registerButton = new ButtonBuilder()
+          .setCustomId(`stream_register_${row.channel_id}`)
+          .setLabel('Ich will streamen')
+          .setStyle(ButtonStyle.Primary);
+
+        components.push(new ActionRowBuilder().addComponents(registerButton));
+
+        await message.edit({
+          content: updatedContent,
+          components: components,
+        });
+
+        logger.info(`Streamer message restored: ${row.message_id}`);
+      } catch (err) {
+        logger.warn(`Could not restore streamer message ${row.message_id}:`, err.message);
+      }
+    }
+  } catch (err) {
+    logger.error('Error restoring streamer messages:', err);
+  }
+}
+
 async function postWeeklySummary() {
   try {
     const guild = client.guilds.cache.first();
@@ -168,7 +227,45 @@ async function handleUnauthorizedInteraction(interaction) {
   });
 }
 
-// Handler für Button-Interaktionen
+// Ready Event - Restore streamer messages on bot startup
+client.on('ready', async () => {
+  logger.info(`Bot logged in as ${client.user.tag}`);
+  await restoreStreamerMessages();
+});
+
+// Handler für Remove-Button-Interaktionen
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  try {
+    if (interaction.customId.startsWith('stream_remove_')) {
+      const parts = interaction.customId.split('_');
+      const messageId = parts[2];
+      const userId = parts[3];
+
+      // Aus der Datenbank löschen
+      dbOps.deleteStreamerByUserAndMessage(messageId, userId);
+
+      // Ursprüngliche Nachricht aktualisieren
+      await updateStreamerMessage(messageId, interaction.channelId, interaction);
+
+      await interaction.reply({
+        content: 'Du wurdest abgemeldet!',
+        ephemeral: true,
+      });
+    }
+  } catch (err) {
+    logger.error('Error handling remove button interaction:', err);
+    await interaction
+      .reply({
+        content: 'Ein Fehler ist aufgetreten.',
+        ephemeral: true,
+      })
+      .catch(() => {});
+  }
+});
+
+// Handler für Button-Interaktionen (Register)
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
@@ -178,8 +275,8 @@ client.on('interactionCreate', async (interaction) => {
         .setCustomId(`stream_location_${interaction.message.id}`)
         .setPlaceholder('Wähle Stream-Ort...')
         .addOptions(
-          new StringSelectMenuOptionBuilder().setLabel('Stream Privat').setValue('privat'),
-          new StringSelectMenuOptionBuilder().setLabel('Stream TTT').setValue('ttt')
+          new StringSelectMenuOptionBuilder().setLabel('Stream Privat-Kanäle').setValue('privat'),
+          new StringSelectMenuOptionBuilder().setLabel('Stream TTT-Kanäle').setValue('ttt')
         );
 
       const actionRow = new ActionRowBuilder().addComponents(selectMenu);
@@ -208,6 +305,18 @@ client.on('interactionCreate', async (interaction) => {
   try {
     if (interaction.customId.startsWith('stream_location_')) {
       const messageId = interaction.customId.replace('stream_location_', '');
+      const streamers = dbOps.getStreamersByMessageId(messageId);
+
+      // Prüfe ob User bereits registriert ist
+      const existingStreamer = streamers.find((s) => s.user_id === interaction.user.id);
+      if (existingStreamer) {
+        await interaction.reply({
+          content: `Du bist bereits registriert als: **${existingStreamer.user_name}** - ${existingStreamer.stream_location}`,
+          ephemeral: true,
+        });
+        return;
+      }
+
       const streamLocation = interaction.values[0];
 
       const modal = new ModalBuilder()
@@ -237,6 +346,46 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
+async function updateStreamerMessage(messageId, channelId, interaction) {
+  const originalMessage = await interaction.channel.messages.fetch(messageId);
+  if (!originalMessage) return;
+
+  const streamers = dbOps.getStreamersByMessageId(messageId);
+  const components = [];
+
+  if (streamers.length > 0) {
+    for (const s of streamers) {
+      const removeButton = new ButtonBuilder()
+        .setCustomId(`stream_remove_${messageId}_${s.user_id}`)
+        .setLabel(`Abmelden: ${s.user_name}`)
+        .setStyle(ButtonStyle.Danger);
+
+      const actionRow = new ActionRowBuilder().addComponents(removeButton);
+      components.push(actionRow);
+    }
+  }
+
+  const streamerList = streamers
+    .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
+    .join('\n');
+
+  const updatedContent = `**Streamer für dieses Event**\n\n${
+    streamerList || '_Noch keine Streamer registriert._'
+  }`;
+
+  const registerButton = new ButtonBuilder()
+    .setCustomId(`stream_register_${channelId}`)
+    .setLabel('Ich will streamen')
+    .setStyle(ButtonStyle.Primary);
+
+  components.push(new ActionRowBuilder().addComponents(registerButton));
+
+  await originalMessage.edit({
+    content: updatedContent,
+    components: components,
+  });
+}
+
 // Handler für Modal-Interaktionen
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isModalSubmit()) return;
@@ -261,33 +410,19 @@ client.on('interactionCreate', async (interaction) => {
       );
 
       // Ursprüngliche Nachricht aktualisieren
-      const originalMessage = await interaction.channel.messages.fetch(messageId);
-      if (originalMessage) {
-        const streamers = dbOps.getStreamersByMessageId(messageId);
-        const streamerList = streamers
-          .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
-          .join('\n');
+      await updateStreamerMessage(messageId, interaction.channelId, interaction);
 
-        const updatedContent = `**Streamer für dieses Event**\n\n${
-          streamerList || '_Noch keine Streamer registriert._'
-        }`;
+      // Personalisierte Bestätigungsnachricht für den User mit eigenem Abmelden-Button
+      const userRemoveButton = new ButtonBuilder()
+        .setCustomId(`stream_remove_${messageId}_${interaction.user.id}`)
+        .setLabel('Abmelden')
+        .setStyle(ButtonStyle.Danger);
 
-        // Nur Button bleibt für weitere Registrierungen
-        const registerButton = new ButtonBuilder()
-          .setCustomId(`stream_register_${interaction.channelId}`)
-          .setLabel('Streamer registrieren')
-          .setStyle(ButtonStyle.Primary);
-
-        const actionRow = new ActionRowBuilder().addComponents(registerButton);
-
-        await originalMessage.edit({
-          content: updatedContent,
-          components: [actionRow],
-        });
-      }
+      const userActionRow = new ActionRowBuilder().addComponents(userRemoveButton);
 
       await interaction.reply({
-        content: 'Deine Stream-Anmeldung wurde hinzugefügt!',
+        content: `Danke für deine Anmeldung! Du bist registriert als:\n**${interaction.user.username}** - ${streamLocation === 'privat' ? 'Stream Privat' : 'Stream TTT'} - ${resolutionFps}`,
+        components: [userActionRow],
         ephemeral: true,
       });
     }

@@ -36,6 +36,11 @@ function migrate() {
     stream_location TEXT NOT NULL,
     resolution_fps TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP  )`);
+  db.exec(`CREATE TABLE IF NOT EXISTS stream_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT UNIQUE NOT NULL,
+    channel_id TEXT UNIQUE NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP  )`);
 }
 
 export { db, migrate };
