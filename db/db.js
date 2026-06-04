@@ -26,8 +26,16 @@ function migrate() {
   )`);
   db.exec(`CREATE TABLE IF NOT EXISTS config (
     key TEXT PRIMARY KEY,
-    value TEXT
-  )`);
+    value TEXT  )`);
+  db.exec(`CREATE TABLE IF NOT EXISTS streamers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    message_id TEXT UNIQUE NOT NULL,
+    channel_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    user_name TEXT NOT NULL,
+    stream_location TEXT NOT NULL,
+    resolution_fps TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP  )`);
 }
 
 export { db, migrate };

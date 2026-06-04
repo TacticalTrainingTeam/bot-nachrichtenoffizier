@@ -131,6 +131,10 @@ const commands = [
       },
     ],
   },
+  {
+    name: 'stream',
+    description: 'Erstelle eine Stream-Registrierungsmeldung',
+  },
 ];
 
 const rest = new REST({ version: '10' }).setToken(token);

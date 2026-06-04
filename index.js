@@ -9,7 +9,19 @@ import dbOps from './db/operations.js';
 import { handleError } from './utils/errorHandler.js';
 import commandRouter from './commandRouter.js';
 import { isAdmin, canManageEvents } from './utils/permissions.js';
-import { Client, GatewayIntentBits, Partials } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  Partials,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from 'discord.js';
 import logger from './utils/logger.js';
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
@@ -109,6 +121,14 @@ client.on('interactionCreate', async (interaction) => {
   const name = interaction.commandName;
   try {
     const member = interaction.member;
+    
+    // Öffentliche Befehle (alle User)
+    const publicCommands = ['stream'];
+    if (publicCommands.includes(name)) {
+      await handleAuthorizedInteraction(interaction, name);
+      return;
+    }
+    
     if (isAdmin(member)) {
       await handleAuthorizedInteraction(interaction, name);
       return;
@@ -147,6 +167,137 @@ async function handleUnauthorizedInteraction(interaction) {
     ephemeral: true,
   });
 }
+
+// Handler für Button-Interaktionen
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+  
+  try {
+    if (interaction.customId.startsWith('stream_register_')) {
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId(`stream_location_${interaction.message.id}`)
+        .setPlaceholder('Wähle Stream-Ort...')
+        .addOptions(
+          new StringSelectMenuOptionBuilder()
+            .setLabel('Stream Privat')
+            .setValue('privat'),
+          new StringSelectMenuOptionBuilder()
+            .setLabel('Stream TTT')
+            .setValue('ttt')
+        );
+
+      const actionRow = new ActionRowBuilder().addComponents(selectMenu);
+
+      await interaction.reply({
+        content: 'Wähle deinen Stream-Ort:',
+        components: [actionRow],
+        ephemeral: true,
+      });
+    }
+  } catch (err) {
+    logger.error('Error handling button interaction:', err);
+    await interaction.reply({
+      content: 'Ein Fehler ist aufgetreten.',
+      ephemeral: true,
+    }).catch(() => {});
+  }
+});
+
+// Handler für Select-Menü-Interaktionen
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isStringSelectMenu()) return;
+
+  try {
+    if (interaction.customId.startsWith('stream_location_')) {
+      const messageId = interaction.customId.replace('stream_location_', '');
+      const streamLocation = interaction.values[0];
+
+      const modal = new ModalBuilder()
+        .setCustomId(`stream_modal_${messageId}_${streamLocation}`)
+        .setTitle('Stream-Informationen')
+        .addComponents(
+          new ActionRowBuilder().addComponents(
+            new TextInputBuilder()
+              .setCustomId('resolution_fps')
+              .setLabel('Auflösung/FPS (z.B. 1080p/60)')
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false)
+              .setMaxLength(50)
+          )
+        );
+
+      await interaction.showModal(modal);
+    }
+  } catch (err) {
+    logger.error('Error handling select menu interaction:', err);
+    await interaction.reply({
+      content: 'Ein Fehler ist aufgetreten.',
+      ephemeral: true,
+    }).catch(() => {});
+  }
+});
+
+// Handler für Modal-Interaktionen
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isModalSubmit()) return;
+
+  try {
+    if (interaction.customId.startsWith('stream_modal_')) {
+      const customIdParts = interaction.customId.split('_');
+      const messageId = customIdParts[2];
+      const streamLocation = customIdParts[3];
+      
+      const resolutionFps = interaction.fields.getTextInputValue('resolution_fps') || 'Nicht angegeben';
+
+      // In der Datenbank speichern
+      await dbOps.insertStreamer(
+        messageId,
+        interaction.channelId,
+        interaction.user.id,
+        interaction.user.username,
+        streamLocation === 'privat' ? 'Stream Privat' : 'Stream TTT',
+        resolutionFps
+      );
+
+      // Ursprüngliche Nachricht aktualisieren
+      const originalMessage = await interaction.channel.messages.fetch(messageId);
+      if (originalMessage) {
+        const streamers = await dbOps.getStreamersByMessageId(messageId);
+        const streamerList = streamers
+          .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
+          .join('\n');
+
+        const updatedContent = `**Streamer für dieses Event** 🎬\n\n${
+          streamerList || '_Noch keine Streamer registriert._'
+        }`;
+
+        // Nur Button bleibt für weitere Registrierungen
+        const registerButton = new ButtonBuilder()
+          .setCustomId(`stream_register_${interaction.channelId}`)
+          .setLabel('Streamer registrieren')
+          .setStyle(ButtonStyle.Primary);
+
+        const actionRow = new ActionRowBuilder().addComponents(registerButton);
+
+        await originalMessage.edit({
+          content: updatedContent,
+          components: [actionRow],
+        });
+      }
+
+      await interaction.reply({
+        content: '✅ Deine Stream-Anmeldung wurde hinzugefügt!',
+        ephemeral: true,
+      });
+    }
+  } catch (err) {
+    logger.error('Error handling modal submission:', err);
+    await interaction.reply({
+      content: 'Ein Fehler ist aufgetreten.',
+      ephemeral: true,
+    }).catch(() => {});
+  }
+});
 
 client.login(token);
 
