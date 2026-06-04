@@ -7,7 +7,7 @@ export default async function handleConfig(interaction, { dbOps }) {
       const channel = interaction.options.getChannel('channel', true);
       await dbOps.setConfig('postChannel', channel.id);
       await interaction.reply({
-        content: `✅ Channel für Wochenpost gesetzt: <#${channel.id}> (${channel.name})`,
+        content: `Channel für Wochenpost gesetzt: <#${channel.id}> (${channel.name})`,
       });
       return;
     }

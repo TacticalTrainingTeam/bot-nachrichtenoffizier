@@ -4,7 +4,7 @@ import { handleError } from '../utils/errorHandler.js';
 export default async function handleStream(interaction, { dbOps, client }) {
   try {
     const channelId = interaction.channelId;
-    const messageContent = '**Streamer für dieses Event** 🎬';
+    const messageContent = '**Streamer für dieses Event**';
 
     const registerButton = new ButtonBuilder()
       .setCustomId(`stream_register_${channelId}`)
@@ -19,7 +19,7 @@ export default async function handleStream(interaction, { dbOps, client }) {
     });
 
     await interaction.reply({
-      content: '✅ Stream-Übersicht erstellt!',
+      content: 'Stream-Übersicht erstellt!',
       ephemeral: true,
     });
   } catch (err) {

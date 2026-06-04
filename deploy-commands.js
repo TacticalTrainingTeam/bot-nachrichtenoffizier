@@ -162,7 +162,7 @@ try {
   // Register new commands globally
   logger.info('Registering new global commands...');
   await rest.put(Routes.applicationCommands(clientId), { body: commands });
-  logger.info('✅ Slash commands successfully registered.');
+  logger.info('Slash commands successfully registered.');
 } catch (err) {
   logger.error('Fehler beim Registrieren der Commands:', err);
   process.exit(1);

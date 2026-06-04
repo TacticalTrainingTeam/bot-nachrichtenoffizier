@@ -81,7 +81,7 @@ function createWeeklySummaryMessage(events, topics) {
   const mondayMonth = (nextMonday.getMonth() + 1).toString().padStart(2, '0');
   const sundayMonth = (nextSunday.getMonth() + 1).toString().padStart(2, '0');
   const year = nextMonday.getFullYear();
-  let message = `# 🗓 Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
+  let message = `# Wochenübersicht (${mondayDay}.${mondayMonth}.–${sundayDay}.${sundayMonth}.${year})\n\n`;
   const eventsWithDate = events
     .filter((e) => e.date_text)
     .sort((a, b) => {
@@ -94,16 +94,16 @@ function createWeeklySummaryMessage(events, topics) {
     .filter((e) => !e.date_text && e.added_by)
     .sort((a, b) => a.title.localeCompare(b.title));
   if (eventsWithDate.length) {
-    message += '## 📅 Events\n';
+    message += '## Events\n';
     for (const e of eventsWithDate) {
       message += createEventText(e) + '\n';
     }
     message += '\n';
   } else {
-    message += '## 📅 _Keine geplanten Events._\n\n';
+    message += '## _Keine geplanten Events._\n\n';
   }
   if (eventsWithoutDate.length || topics.length) {
-    message += '## 💡 Sonstiges\n';
+    message += '## Sonstiges\n';
     for (const e of eventsWithoutDate) {
       message += createEventText(e) + ' (' + e.added_by + ')\n';
     }
@@ -121,14 +121,14 @@ client.on('interactionCreate', async (interaction) => {
   const name = interaction.commandName;
   try {
     const member = interaction.member;
-    
+
     // Öffentliche Befehle (alle User)
     const publicCommands = ['stream'];
     if (publicCommands.includes(name)) {
       await handleAuthorizedInteraction(interaction, name);
       return;
     }
-    
+
     if (isAdmin(member)) {
       await handleAuthorizedInteraction(interaction, name);
       return;
@@ -171,7 +171,7 @@ async function handleUnauthorizedInteraction(interaction) {
 // Handler für Button-Interaktionen
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
-  
+
   try {
     if (interaction.customId.startsWith('stream_register_')) {
       const selectMenu = new StringSelectMenuBuilder()
@@ -246,7 +246,7 @@ client.on('interactionCreate', async (interaction) => {
       const customIdParts = interaction.customId.split('_');
       const messageId = customIdParts[2];
       const streamLocation = customIdParts[3];
-      
+
       const resolutionFps = interaction.fields.getTextInputValue('resolution_fps') || 'Nicht angegeben';
 
       // In der Datenbank speichern
@@ -267,7 +267,7 @@ client.on('interactionCreate', async (interaction) => {
           .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
           .join('\n');
 
-        const updatedContent = `**Streamer für dieses Event** 🎬\n\n${
+        const updatedContent = `**Streamer für dieses Event**\n\n${
           streamerList || '_Noch keine Streamer registriert._'
         }`;
 
@@ -286,7 +286,7 @@ client.on('interactionCreate', async (interaction) => {
       }
 
       await interaction.reply({
-        content: '✅ Deine Stream-Anmeldung wurde hinzugefügt!',
+        content: 'Deine Stream-Anmeldung wurde hinzugefügt!',
         ephemeral: true,
       });
     }
