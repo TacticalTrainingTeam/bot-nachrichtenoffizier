@@ -8,7 +8,7 @@ export default async function handleAufraumen(interaction, { dbOps, syncDiscordE
       await dbOps.clearTopics();
       await dbOps.clearEvents();
       await interaction.reply({
-        content: '✅ Alle Themen und Events wurden gelöscht.',
+        content: 'Alle Themen und Events wurden gelöscht.',
         ephemeral: true,
       });
       return;
@@ -17,7 +17,7 @@ export default async function handleAufraumen(interaction, { dbOps, syncDiscordE
     if (sub === 'discord-sync') {
       await syncDiscordEventsToDb(interaction.guild, dbOps);
       await interaction.reply({
-        content: '✅ Discord-Events wurden in die Datenbank synchronisiert.',
+        content: 'Discord-Events wurden in die Datenbank synchronisiert.',
         ephemeral: true,
       });
       return;

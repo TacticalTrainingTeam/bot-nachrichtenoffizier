@@ -3,6 +3,7 @@
 A Discord bot for TTT (Tactical Training Team) that manages weekly event and topic overviews.
 
 ## Features
+
 - Automated weekly summaries (events & topics)
 - Slash commands for event/topic management
 - Role-based permissions (Admin & Event Manager)
@@ -20,6 +21,7 @@ pnpm install
 ## Configuration
 
 Create a `.env` file based on `.env.example`:
+
 - `DISCORD_TOKEN` - Bot token from Discord Developer Portal
 - `CLIENT_ID` - Application client ID
 - `POST_CRON` - Cron expression for weekly posts (e.g., `0 19 * * SUN`)
@@ -28,11 +30,13 @@ Create a `.env` file based on `.env.example`:
 ## Usage
 
 Deploy slash commands:
+
 ```bash
 pnpm run deploy-commands
 ```
 
 Start the bot:
+
 ```bash
 pnpm start
 ```
@@ -40,11 +44,13 @@ pnpm start
 ## Docker Deployment
 
 ### Using Docker Compose (recommended):
+
 ```bash
 docker-compose up -d
 ```
 
 ### Using Docker directly:
+
 ```bash
 docker build -t nachrichtenoffizier .
 docker run -d --name bot-nachrichtenoffizier \
@@ -69,4 +75,3 @@ docker run -d --name bot-nachrichtenoffizier \
 ## License
 
 See [LICENSE](LICENSE) file for details.
-

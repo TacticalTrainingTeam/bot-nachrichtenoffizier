@@ -22,7 +22,7 @@ export default async function handleThema(interaction, { dbOps }) {
 
       await dbOps.insertTopic(interaction.user.tag, interaction.user.id, text);
       await interaction.reply({
-        content: '✅ Dein Thema wurde gespeichert. Danke!',
+        content: 'Dein Thema wurde gespeichert. Danke!',
         ephemeral: true,
       });
       return;
@@ -30,7 +30,7 @@ export default async function handleThema(interaction, { dbOps }) {
     if (sub === 'löschen') {
       const id = interaction.options.getInteger('id', true);
       await dbOps.deleteTopicById(id);
-      await interaction.reply({ content: `✅ Thema mit ID ${id} gelöscht.`, ephemeral: true });
+      await interaction.reply({ content: `Thema mit ID ${id} gelöscht.`, ephemeral: true });
       return;
     }
     await interaction.reply({ content: 'Unbekannter Subcommand für /thema.', ephemeral: true });

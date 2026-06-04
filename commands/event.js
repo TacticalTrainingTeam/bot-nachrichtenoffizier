@@ -24,7 +24,7 @@ export default async function handleEvent(interaction, { dbOps }) {
 
       await dbOps.insertEvent(title, dateText, interaction.user.tag);
       await interaction.reply({
-        content: '✅ Event **' + title + '** wurde gespeichert.',
+        content: 'Event **' + title + '** wurde gespeichert.',
         ephemeral: true,
       });
       return;
@@ -32,7 +32,7 @@ export default async function handleEvent(interaction, { dbOps }) {
     if (sub === 'löschen') {
       const id = interaction.options.getInteger('id', true);
       await dbOps.deleteEventById(id);
-      await interaction.reply({ content: `✅ Event mit ID ${id} gelöscht.`, ephemeral: true });
+      await interaction.reply({ content: `Event mit ID ${id} gelöscht.`, ephemeral: true });
       return;
     }
     await interaction.reply({ content: 'Unbekannter Subcommand für /event.', ephemeral: true });

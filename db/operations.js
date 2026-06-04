@@ -43,6 +43,30 @@ const getConfig = (key) => {
 const setConfig = (key, value) =>
   db.prepare('INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)').run(key, value);
 
+const insertStreamer = (
+  messageId,
+  channelId,
+  userId,
+  userName,
+  streamLocation,
+  resolutionFps = null
+) => {
+  const result = db
+    .prepare(
+      'INSERT INTO streamers (message_id, channel_id, user_id, user_name, stream_location, resolution_fps) VALUES (?, ?, ?, ?, ?, ?)'
+    )
+    .run(messageId, channelId, userId, userName, streamLocation, resolutionFps);
+  return Number(result.lastInsertRowid);
+};
+
+const getStreamersByMessageId = (messageId) =>
+  db.prepare('SELECT * FROM streamers WHERE message_id = ? ORDER BY created_at ASC').all(messageId);
+
+const deleteStreamerById = (id) => db.prepare('DELETE FROM streamers WHERE id = ?').run(id);
+
+const deleteStreamerByUserAndMessage = (messageId, userId) =>
+  db.prepare('DELETE FROM streamers WHERE message_id = ? AND user_id = ?').run(messageId, userId);
+
 export default {
   deleteTopicById,
   deleteEventById,
@@ -54,4 +78,8 @@ export default {
   clearEvents,
   getConfig,
   setConfig,
+  insertStreamer,
+  getStreamersByMessageId,
+  deleteStreamerById,
+  deleteStreamerByUserAndMessage,
 };

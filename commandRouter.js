@@ -3,6 +3,7 @@ import handleEvent from './commands/event.js';
 import handleConfig from './commands/config.js';
 import handleAufraumen from './commands/aufraumen.js';
 import handleWochenuebersicht from './commands/wochenuebersicht.js';
+import handleStream from './commands/stream.js';
 
 export default {
   thema: handleThema,
@@ -10,4 +11,5 @@ export default {
   config: handleConfig,
   aufräumen: handleAufraumen,
   wochenüberblick: handleWochenuebersicht,
+  stream: handleStream,
 };
