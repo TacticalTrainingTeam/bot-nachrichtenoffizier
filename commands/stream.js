@@ -4,11 +4,11 @@ import { handleError } from '../utils/errorHandler.js';
 export default async function handleStream(interaction) {
   try {
     const channelId = interaction.channelId;
-    const messageContent = '**Streamer für dieses Event**';
+    const messageContent = '**Wir suchen Streamer für dieses Event. Melde dich.**';
 
     const registerButton = new ButtonBuilder()
       .setCustomId(`stream_register_${channelId}`)
-      .setLabel('Streamer registrieren')
+      .setLabel('Ich will streamen')
       .setStyle(ButtonStyle.Primary);
 
     const actionRow = new ActionRowBuilder().addComponents(registerButton);
