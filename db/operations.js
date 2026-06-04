@@ -67,6 +67,24 @@ const deleteStreamerById = (id) => db.prepare('DELETE FROM streamers WHERE id = 
 const deleteStreamerByUserAndMessage = (messageId, userId) =>
   db.prepare('DELETE FROM streamers WHERE message_id = ? AND user_id = ?').run(messageId, userId);
 
+const getUniqueStreamerMessages = () =>
+  db
+    .prepare('SELECT DISTINCT message_id, channel_id FROM streamers WHERE message_id IS NOT NULL')
+    .all();
+
+const insertStreamMessage = (messageId, channelId) =>
+  db
+    .prepare('INSERT INTO stream_messages (message_id, channel_id) VALUES (?, ?)')
+    .run(messageId, channelId);
+
+const getStreamMessageByChannelId = (channelId) =>
+  db.prepare('SELECT * FROM stream_messages WHERE channel_id = ?').get(channelId);
+
+const deleteStreamMessage = (messageId) =>
+  db.prepare('DELETE FROM stream_messages WHERE message_id = ?').run(messageId);
+
+const getAllStreamMessages = () => db.prepare('SELECT * FROM stream_messages').all();
+
 export default {
   deleteTopicById,
   deleteEventById,
@@ -82,4 +100,9 @@ export default {
   getStreamersByMessageId,
   deleteStreamerById,
   deleteStreamerByUserAndMessage,
+  getUniqueStreamerMessages,
+  insertStreamMessage,
+  getStreamMessageByChannelId,
+  deleteStreamMessage,
+  getAllStreamMessages,
 };

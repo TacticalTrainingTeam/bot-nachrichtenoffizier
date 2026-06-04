@@ -44,6 +44,65 @@ const client = new Client({
 
 migrate();
 
+async function restoreStreamerMessages() {
+  try {
+    // Hole alle Stream-Messages
+    const streamMessages = dbOps.getAllStreamMessages();
+
+    for (const row of streamMessages) {
+      try {
+        const channel = await client.channels.fetch(row.channel_id).catch(() => null);
+        if (!channel) continue;
+
+        const message = await channel.messages.fetch(row.message_id).catch(() => null);
+        if (!message) continue;
+
+        // Hole alle Streamer für diese Nachricht
+        const streamers = dbOps.getStreamersByMessageId(row.message_id);
+        const components = [];
+
+        if (streamers.length > 0) {
+          for (const s of streamers) {
+            const removeButton = new ButtonBuilder()
+              .setCustomId(`stream_remove_${row.message_id}_${s.user_id}`)
+              .setLabel(`Abmelden: ${s.user_name}`)
+              .setStyle(ButtonStyle.Danger);
+
+            const actionRow = new ActionRowBuilder().addComponents(removeButton);
+            components.push(actionRow);
+          }
+        }
+
+        const streamerList = streamers
+          .map((s) => `**${s.user_name}** - ${s.stream_location} - ${s.resolution_fps}`)
+          .join('\n');
+
+        const updatedContent = `**Streamer für dieses Event**\n\n${
+          streamerList || '_Noch keine Streamer registriert._'
+        }`;
+
+        const registerButton = new ButtonBuilder()
+          .setCustomId(`stream_register_${row.channel_id}`)
+          .setLabel('Ich will streamen')
+          .setStyle(ButtonStyle.Primary);
+
+        components.push(new ActionRowBuilder().addComponents(registerButton));
+
+        await message.edit({
+          content: updatedContent,
+          components: components,
+        });
+
+        logger.info(`Streamer message restored: ${row.message_id}`);
+      } catch (err) {
+        logger.warn(`Could not restore streamer message ${row.message_id}:`, err.message);
+      }
+    }
+  } catch (err) {
+    logger.error('Error restoring streamer messages:', err);
+  }
+}
+
 async function postWeeklySummary() {
   try {
     const guild = client.guilds.cache.first();
@@ -167,6 +226,12 @@ async function handleUnauthorizedInteraction(interaction) {
     ephemeral: true,
   });
 }
+
+// Ready Event - Restore streamer messages on bot startup
+client.on('ready', async () => {
+  logger.info(`Bot logged in as ${client.user.tag}`);
+  await restoreStreamerMessages();
+});
 
 // Handler für Remove-Button-Interaktionen
 client.on('interactionCreate', async (interaction) => {
