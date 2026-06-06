@@ -5,8 +5,8 @@ export default async function handleAufraumen(interaction, { dbOps, syncDiscordE
     const sub = interaction.options.getSubcommand();
 
     if (sub === 'datenbank') {
-      await dbOps.clearTopics();
-      await dbOps.clearEvents();
+      dbOps.clearTopics();
+      dbOps.clearEvents();
       await interaction.reply({
         content: 'Alle Themen und Events wurden gelöscht.',
         ephemeral: true,
