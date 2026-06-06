@@ -74,8 +74,8 @@ function buildStreamMessagePayload(streamers, messageId, channelId) {
   const streamerList = streamers
     .map((s) =>
       s.stream_location === 'Stream Privat' && s.stream_url
-        ? `**${s.user_name}** - [Stream Privat](${s.stream_url})`
-        : `**${s.user_name}** - ${s.stream_location}`
+        ? `<@${s.user_id}> - [Stream Privat](<${s.stream_url}>)`
+        : `<@${s.user_id}> - ${s.stream_location}`
     )
     .join('\n');
 
@@ -242,7 +242,7 @@ async function handleButton(interaction) {
     const userId = parts[3];
     dbOps.deleteStreamerByUserAndMessage(messageId, userId);
     await updateStreamerMessage(messageId, interaction.channelId, interaction);
-    await interaction.reply({ content: 'Du wurdest abgemeldet!', ephemeral: true });
+    await interaction.reply({ content: `<@${userId}> wurde abgemeldet.`, ephemeral: true });
   } else if (interaction.customId.startsWith('stream_register_')) {
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId(`stream_location_${interaction.message.id}`)
@@ -267,7 +267,7 @@ async function handleSelectMenu(interaction) {
   const existingStreamer = streamers.find((s) => s.user_id === interaction.user.id);
   if (existingStreamer) {
     await interaction.reply({
-      content: `Du bist bereits registriert als: **${existingStreamer.user_name}** - ${existingStreamer.stream_location}`,
+      content: `Du bist bereits registriert als: <@${existingStreamer.user_id}> - ${existingStreamer.stream_location}`,
       ephemeral: true,
     });
     return;
@@ -324,7 +324,7 @@ async function handleModal(interaction) {
   );
   await updateStreamerMessage(messageId, interaction.channelId, interaction);
   await interaction.reply({
-    content: `Danke für deine Anmeldung! Du bist registriert als:\n**${interaction.user.username}** - [Stream Privat](${streamUrl})`,
+    content: `Danke für deine Anmeldung! Du bist registriert als:\n<@${interaction.user.id}> - [Stream Privat](<${streamUrl}>)`,
     ephemeral: true,
   });
 }

@@ -39,12 +39,6 @@ function migrate() {
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(message_id, user_id)
   )`);
-  try {
-    db.exec(`ALTER TABLE streamers RENAME COLUMN resolution_fps TO stream_url`);
-  } catch {
-    // Spalte existiert bereits als stream_url oder Tabelle ist neu
-  }
-
   db.exec(`CREATE TABLE IF NOT EXISTS stream_messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     message_id TEXT UNIQUE NOT NULL,
