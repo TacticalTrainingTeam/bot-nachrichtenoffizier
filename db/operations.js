@@ -53,7 +53,7 @@ const insertStreamer = (
 ) => {
   const result = db
     .prepare(
-      'INSERT INTO streamers (message_id, channel_id, user_id, user_name, stream_location, resolution_fps) VALUES (?, ?, ?, ?, ?, ?)'
+      'INSERT INTO streamers (message_id, channel_id, user_id, user_name, stream_location, stream_url) VALUES (?, ?, ?, ?, ?, ?)'
     )
     .run(messageId, channelId, userId, userName, streamLocation, resolutionFps);
   return Number(result.lastInsertRowid);
@@ -62,15 +62,8 @@ const insertStreamer = (
 const getStreamersByMessageId = (messageId) =>
   db.prepare('SELECT * FROM streamers WHERE message_id = ? ORDER BY created_at ASC').all(messageId);
 
-const deleteStreamerById = (id) => db.prepare('DELETE FROM streamers WHERE id = ?').run(id);
-
 const deleteStreamerByUserAndMessage = (messageId, userId) =>
   db.prepare('DELETE FROM streamers WHERE message_id = ? AND user_id = ?').run(messageId, userId);
-
-const getUniqueStreamerMessages = () =>
-  db
-    .prepare('SELECT DISTINCT message_id, channel_id FROM streamers WHERE message_id IS NOT NULL')
-    .all();
 
 const insertStreamMessage = (messageId, channelId) =>
   db
@@ -98,9 +91,7 @@ export default {
   setConfig,
   insertStreamer,
   getStreamersByMessageId,
-  deleteStreamerById,
   deleteStreamerByUserAndMessage,
-  getUniqueStreamerMessages,
   insertStreamMessage,
   getStreamMessageByChannelId,
   deleteStreamMessage,
