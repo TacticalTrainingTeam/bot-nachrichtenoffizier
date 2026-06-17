@@ -1,11 +1,20 @@
 import { getWeekdayAbbrev } from './dateUtils.js';
 
 function createEventText(e) {
-  const linkRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
-  const eventLink = [e.title, e.description, e.location]
-    .find((field) => field && linkRegex.test(field))
-    ?.match(linkRegex)?.[1];
+  const tacticalTeamRegex = /(https:\/\/events\.tacticalteam\.de\/events\/[\w-]+)/;
+  const slotbotRegex      = /(https:\/\/slotbot\.de\/events\/[\w-]+)/;
 
+  const fields = [e.title, e.description, e.location];
+
+  const findLink = (regex) => {
+    for (const field of fields) {
+      const match = field && regex.exec(field);
+      if (match) return match[1];
+    }
+    return null;
+  };
+
+  const eventLink = findLink(tacticalTeamRegex) ?? findLink(slotbotRegex);
   const eventText = eventLink ? `[${e.title}](${eventLink})` : e.title;
 
   if (!e.date_text) return ` - ${eventText}`;
