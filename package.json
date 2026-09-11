@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Discord bot: Themen einsenden + wöchentlicher Post mit Themen & Events",
   "type": "module",
-  "packageManager": "pnpm@12.3.4",
+  "packageManager": "pnpm@12.4.1",
   "main": "index.js",
   "engines": {
     "node": ">=22.5"
