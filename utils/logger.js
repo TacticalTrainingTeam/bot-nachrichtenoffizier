@@ -1,25 +1,10 @@
-import winston from 'winston';
+const log =
+  (fn, level) =>
+  (...args) =>
+    fn(new Date().toISOString(), level, ...args);
 
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.errors({ stack: true }),
-    winston.format.json()
-  ),
-  defaultMeta: { service: 'bot-nachrichtenoffizier' },
-  transports: [
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' }),
-  ],
-});
-
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
-    new winston.transports.Console({
-      format: winston.format.simple(),
-    })
-  );
-}
-
-export default logger;
+export default {
+  info: log(console.log, 'INFO'),
+  warn: log(console.warn, 'WARN'),
+  error: log(console.error, 'ERROR'),
+};

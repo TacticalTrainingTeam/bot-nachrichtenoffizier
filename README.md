@@ -71,6 +71,7 @@ docker run -d --name bot-nachrichtenoffizier \
 - `/aufräumen datenbank` - Clear all topics and events
 - `/aufräumen discord-sync` - Sync Discord events to database
 - `/wochenüberblick` - Post a test weekly summary
+- `/stream` - Post a streamer sign-up message in the current channel
 
 ## License
 

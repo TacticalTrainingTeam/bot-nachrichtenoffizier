@@ -6,21 +6,19 @@ const ROLES = {
   OFFIZIER: '121534211822714880',
 };
 
+const hasRole = (member, role) => member?.roles?.cache?.has(role) ?? false;
+
 function isAdmin(member) {
   return (
     member?.permissions?.has(PermissionsBitField.Flags.ManageGuild) ||
-    member?.roles?.cache?.has(ROLES.TECHNIK)
-  );
-}
-
-function isEventManager(member) {
-  return (
-    member?.roles?.cache?.has(ROLES.EVENTMANAGEMENT) || member?.roles?.cache?.has(ROLES.OFFIZIER)
+    hasRole(member, ROLES.TECHNIK)
   );
 }
 
 function canManageEvents(member) {
-  return isAdmin(member) || isEventManager(member);
+  return (
+    isAdmin(member) || hasRole(member, ROLES.EVENTMANAGEMENT) || hasRole(member, ROLES.OFFIZIER)
+  );
 }
 
-export { ROLES, isAdmin, isEventManager, canManageEvents };
+export { isAdmin, canManageEvents };

@@ -1,34 +1,20 @@
-import { handleError } from '../utils/errorHandler.js';
+import { MessageFlags } from 'discord.js';
+import dbOps from '../db/operations.js';
+import { syncDiscordEventsToDb } from '../utils/discordSync.js';
 
-export default async function handleAufraumen(interaction, { dbOps, syncDiscordEventsToDb }) {
-  try {
-    const sub = interaction.options.getSubcommand();
-
-    if (sub === 'datenbank') {
-      dbOps.clearTopics();
-      dbOps.clearEvents();
-      await interaction.reply({
-        content: 'Alle Themen und Events wurden gelöscht.',
-        ephemeral: true,
-      });
-      return;
-    }
-
-    if (sub === 'discord-sync') {
-      await syncDiscordEventsToDb(interaction.guild, dbOps);
-      await interaction.reply({
-        content: 'Discord-Events wurden in die Datenbank synchronisiert.',
-        ephemeral: true,
-      });
-      return;
-    }
-
+export default async function handleAufraumen(interaction) {
+  if (interaction.options.getSubcommand() === 'discord-sync') {
+    await syncDiscordEventsToDb(interaction.guild);
     await interaction.reply({
-      content: 'Unbekannter Subcommand für /aufräumen.',
-      ephemeral: true,
+      content: 'Discord-Events wurden in die Datenbank synchronisiert.',
+      flags: MessageFlags.Ephemeral,
     });
-  } catch (err) {
-    const errorMsg = handleError(err, 'Aufräumen');
-    await interaction.reply({ content: errorMsg.message, ephemeral: true });
+    return;
   }
+  dbOps.clearTopics();
+  dbOps.clearEvents();
+  await interaction.reply({
+    content: 'Alle Themen und Events wurden gelöscht.',
+    flags: MessageFlags.Ephemeral,
+  });
 }

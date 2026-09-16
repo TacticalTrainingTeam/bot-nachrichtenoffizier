@@ -1,16 +1,14 @@
-version: '3.8'
-
 services:
   bot:
     build: .
     container_name: bot-nachrichtenoffizier
     env_file:
       - .env
+    environment:
+      - NODE_ENV=production
     volumes:
       - ./data:/app/data
     restart: unless-stopped
-    environment:
-      - NODE_ENV=production
     logging:
       driver: json-file
       options:

@@ -1,21 +1,12 @@
 import js from '@eslint/js';
-import prettier from 'eslint-plugin-prettier';
+import prettierRecommended from 'eslint-plugin-prettier/recommended';
 
 export default [
   js.configs.recommended,
+  prettierRecommended,
   {
     languageOptions: {
-      globals: {
-        process: 'readonly',
-      },
-    },
-    plugins: {
-      prettier: prettier,
-    },
-    rules: {
-      'prettier/prettier': 'error',
-      'no-unused-vars': 'warn',
-      'no-console': 'off',
+      globals: { process: 'readonly', console: 'readonly' },
     },
   },
 ];
