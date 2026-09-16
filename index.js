@@ -21,6 +21,7 @@ import logger from './utils/logger.js';
 import { isAdmin, canManageEvents } from './utils/permissions.js';
 import { syncDiscordEventsToDb } from './utils/discordSync.js';
 import { createWeeklySummaryMessage } from './utils/eventUtils.js';
+import { CHANNELS } from './discordIds.js';
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
@@ -151,12 +152,16 @@ async function handleButton(interaction) {
   const { customId } = interaction;
   if (customId.startsWith('stream_remove_')) {
     const [, , messageId, userId] = customId.split('_');
+    const streamer = dbOps.getStreamersByMessageId(messageId).find((s) => s.user_id === userId);
     dbOps.deleteStreamerByUserAndMessage(messageId, userId);
     await updateStreamerMessage(interaction.message);
     await interaction.reply({
       content: `<@${userId}> wurde abgemeldet.`,
       flags: MessageFlags.Ephemeral,
     });
+    if (streamer?.stream_location === 'Stream TTT') {
+      await notifyTttStream(interaction, userId, streamer.user_name, 'vom TTT-Stream abgemeldet');
+    }
   } else if (customId.startsWith('stream_register_')) {
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId(`stream_location_${interaction.message.id}`)
@@ -186,6 +191,18 @@ async function registerStreamer(interaction, messageId, location, url = null) {
   await updateStreamerMessage(message);
 }
 
+async function notifyTttStream(interaction, userId, fallbackName, action) {
+  if (!CHANNELS.STREAM_NOTIFY) return;
+  const channel = await client.channels.fetch(CHANNELS.STREAM_NOTIFY).catch(() => null);
+  if (!channel) {
+    logger.warn('Stream notify channel unreachable.');
+    return;
+  }
+  const member = await interaction.guild.members.fetch(userId).catch(() => null);
+  const name = member?.displayName ?? fallbackName;
+  await channel.send(`**${name}** hat sich ${action} (<#${interaction.channelId}>)`);
+}
+
 async function handleSelectMenu(interaction) {
   if (!interaction.customId.startsWith('stream_location_')) return;
 
@@ -207,6 +224,12 @@ async function handleSelectMenu(interaction) {
       content: `Du bist registriert als:\n**${interaction.user.username}** - Stream TTT`,
       flags: MessageFlags.Ephemeral,
     });
+    await notifyTttStream(
+      interaction,
+      interaction.user.id,
+      interaction.user.username,
+      'für TTT-Stream angemeldet'
+    );
     return;
   }
 

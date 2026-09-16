@@ -1,10 +1,5 @@
 import { PermissionsBitField } from 'discord.js';
-
-const ROLES = {
-  TECHNIK: '406217855860867072',
-  EVENTMANAGEMENT: '1059523777584705596',
-  OFFIZIER: '121534211822714880',
-};
+import { ROLES } from '../discordIds.js';
 
 const hasRole = (member, role) => member?.roles?.cache?.has(role) ?? false;
 

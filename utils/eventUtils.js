@@ -4,9 +4,7 @@ import {
   formatDayMonth,
   formatEventDate,
 } from './dateUtils.js';
-
-const EVENTS_CHANNEL_ID = '1184236432575955055';
-const PING_ROLE_ID = '1435610059865325619';
+import { ROLES, CHANNELS } from '../discordIds.js';
 
 // Order matters: tacticalteam links are preferred over slotbot links
 const LINK_PATTERNS = [
@@ -57,7 +55,7 @@ function createWeeklySummaryMessage(events, topics) {
     message += '\n';
   }
 
-  message += `\nAlle Arma-Events findest du hier: <#${EVENTS_CHANNEL_ID}>\n||<@&${PING_ROLE_ID}>||`;
+  message += `\nAlle Arma-Events findest du hier: <#${CHANNELS.EVENTS}>\n||<@&${ROLES.WOCHENPOST_PING}>||`;
   return message;
 }
 
