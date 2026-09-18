@@ -1,4 +1,4 @@
-FROM node:lts-jod
+FROM node:lts-alpine
 
 RUN npm install -g pnpm && mkdir -p /app/data && chown -R node:node /app
 
