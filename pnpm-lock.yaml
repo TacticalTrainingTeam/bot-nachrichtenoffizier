@@ -170,8 +170,8 @@ importers:
         specifier: ^14.14.1
         version: 14.27.0
       dotenv:
-        specifier: ^18.0.0
-        version: 18.0.0
+        specifier: ^17.0.0
+        version: 17.4.2
       node-cron:
         specifier: ^4.0.0
         version: 4.6.0
@@ -378,10 +378,9 @@ packages:
     resolution: {integrity: sha512-qHbFlFG2N7y3LjPySYsL6A1+BnX6bkTVgo842EX0CqVPk/KTMwZkojPHEXKsQUpWZNyz5BISNHK1cPpQw0+m4A==}
     engines: {node: '>=18'}
 
-  dotenv@18.0.0:
-    resolution: {integrity: sha512-16YSUvsKtKbwrTbESvtTSZzzJUug6jdFdqiBFg9Q6Bk1JY9r0hAtrtTiWxdI9YrsgOTmkjZRdgU0n3LnwGpECw==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
-    hasBin: true
 
   escape-string-regexp@4.0.0:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
@@ -853,7 +852,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  dotenv@18.0.0: {}
+  dotenv@17.4.2: {}
 
   escape-string-regexp@4.0.0: {}
 
