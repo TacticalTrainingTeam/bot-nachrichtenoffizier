@@ -3,12 +3,17 @@ import dbOps from '../db/operations.js';
 
 export default async function handleStream(interaction) {
   const { channelId } = interaction;
-  if (dbOps.getStreamMessageByChannelId(channelId)) {
-    await interaction.reply({
-      content: 'Es existiert bereits eine Stream-Übersicht in diesem Channel!',
-      flags: MessageFlags.Ephemeral,
-    });
-    return;
+  const existing = dbOps.getStreamMessageByChannelId(channelId);
+  if (existing) {
+    const message = await interaction.channel.messages.fetch(existing.message_id).catch(() => null);
+    if (message) {
+      await interaction.reply({
+        content: 'Es existiert bereits eine Stream-Übersicht in diesem Channel!',
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+    dbOps.deleteStreamMessage(existing.message_id); // Nachricht wurde gelöscht, Eintrag aufräumen
   }
 
   const registerButton = new ButtonBuilder()

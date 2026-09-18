@@ -84,21 +84,6 @@ async function updateStreamerMessage(message) {
   await message.edit(buildStreamMessagePayload(streamers, message.id, message.channelId));
 }
 
-async function restoreStreamerMessages() {
-  for (const row of dbOps.getAllStreamMessages()) {
-    const channel = await client.channels.fetch(row.channel_id).catch(() => null);
-    const message = await channel?.messages.fetch(row.message_id).catch(() => null);
-    if (!message) {
-      dbOps.deleteStreamMessage(row.message_id);
-      logger.warn(`Streamer message ${row.message_id} no longer exists, removed from DB.`);
-      continue;
-    }
-    await updateStreamerMessage(message).catch((err) =>
-      logger.warn(`Could not restore streamer message ${row.message_id}:`, err.message)
-    );
-  }
-}
-
 async function postWeeklySummary() {
   try {
     const guild = client.guilds.cache.first();
@@ -262,10 +247,7 @@ async function handleModal(interaction) {
   });
 }
 
-client.once(Events.ClientReady, async () => {
-  logger.info(`Bot logged in as ${client.user.tag}`);
-  await restoreStreamerMessages();
-});
+client.once(Events.ClientReady, () => logger.info(`Bot logged in as ${client.user.tag}`));
 
 client.on(Events.InteractionCreate, async (interaction) => {
   try {

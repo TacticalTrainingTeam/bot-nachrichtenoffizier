@@ -53,7 +53,6 @@ const insertStreamMessage = (messageId, channelId) =>
     .run(messageId, channelId);
 const getStreamMessageByChannelId = (channelId) =>
   db.prepare('SELECT * FROM stream_messages WHERE channel_id = ?').get(channelId);
-const getAllStreamMessages = () => db.prepare('SELECT * FROM stream_messages').all();
 const deleteStreamMessage = (messageId) => {
   db.prepare('DELETE FROM streamers WHERE message_id = ?').run(messageId);
   db.prepare('DELETE FROM stream_messages WHERE message_id = ?').run(messageId);
@@ -76,6 +75,5 @@ export default {
   deleteStreamerByUserAndMessage,
   insertStreamMessage,
   getStreamMessageByChannelId,
-  getAllStreamMessages,
   deleteStreamMessage,
 };
