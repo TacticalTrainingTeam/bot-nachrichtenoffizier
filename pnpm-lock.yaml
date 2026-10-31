@@ -171,7 +171,7 @@ importers:
         version: 14.27.0
       dotenv:
         specifier: ^18.0.0
-        version: 18.0.8
+        version: 18.0.9
       node-cron:
         specifier: ^4.0.0
         version: 4.6.0
@@ -381,8 +381,8 @@ packages:
     resolution: {integrity: sha512-qHbFlFG2N7y3LjPySYsL6A1+BnX6bkTVgo842EX0CqVPk/KTMwZkojPHEXKsQUpWZNyz5BISNHK1cPpQw0+m4A==}
     engines: {node: '>=18'}
 
-  dotenv@18.0.8:
-    resolution: {integrity: sha512-2KDeoFoK/zRtcnbunCDlLG5VWVMcyqeQc6iK65o231nfNAcuGrKoqUQfJFUtBI+QlShk5HKIHxwebBtUl3rEfA==}
+  dotenv@18.0.9:
+    resolution: {integrity: sha512-3fVOW4cB02R066PUSwn8O4TJyz9NckQl7F81blIbaq9jKBm2tSmOKky7ZHIXzGvkVPXCSn6jkpziBPZdGFs8Tw==}
     engines: {node: '>=12'}
     hasBin: true
 
@@ -858,7 +858,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  dotenv@18.0.8: {}
+  dotenv@18.0.9: {}
 
   escape-string-regexp@4.0.0: {}
 
