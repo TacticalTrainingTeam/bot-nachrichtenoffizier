@@ -24,12 +24,14 @@ Create a `.env` file based on `.env.example`:
 
 - `DISCORD_TOKEN` - Bot token from Discord Developer Portal
 - `CLIENT_ID` - Application client ID
+- `GUILD_ID` - (optional) Guild ID for instant guild-scoped command deployment; without it commands register globally (up to 1 h delay)
 - `POST_CRON` - Cron expression for weekly posts (e.g., `0 19 * * SUN`)
 - `TIMEZONE` - Timezone for cron jobs (default: `Europe/Berlin`)
 
 ## Usage
 
-Deploy slash commands:
+Deploy slash commands (guild-scoped when `GUILD_ID` is set, otherwise global —
+delete old global commands once after switching):
 
 ```bash
 pnpm run deploy-commands

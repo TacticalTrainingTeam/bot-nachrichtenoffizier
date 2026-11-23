@@ -1,14 +1,22 @@
 import 'dotenv/config';
-import { REST, Routes, ApplicationCommandOptionType as Type } from 'discord.js';
+import {
+  REST,
+  Routes,
+  ApplicationCommandOptionType as Type,
+  PermissionFlagsBits,
+} from 'discord.js';
 import logger from './utils/logger.js';
 
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
+const guildId = process.env.GUILD_ID;
 
 if (!token || !clientId) {
   logger.error('Bitte DISCORD_TOKEN und CLIENT_ID in .env setzen.');
   process.exit(1);
 }
+
+const adminOnly = { default_member_permissions: PermissionFlagsBits.ManageGuild.toString() };
 
 const idOption = (what) => ({
   name: 'id',
@@ -21,6 +29,7 @@ const commands = [
   {
     name: 'config',
     description: 'Konfiguriere den Bot',
+    ...adminOnly,
     options: [
       {
         name: 'channel',
@@ -95,6 +104,7 @@ const commands = [
   {
     name: 'aufräumen',
     description: 'Verwalte und synchronisiere Themen & Events',
+    ...adminOnly,
     options: [
       {
         name: 'datenbank',
@@ -123,9 +133,15 @@ const commands = [
 
 const rest = new REST({ version: '10' }).setToken(token);
 
+const route = guildId
+  ? Routes.applicationGuildCommands(clientId, guildId)
+  : Routes.applicationCommands(clientId);
+
+const scope = guildId ? `Guild ${guildId}` : 'global';
+
 try {
-  await rest.put(Routes.applicationCommands(clientId), { body: commands });
-  logger.info(`${commands.length} Slash-Commands registriert.`);
+  await rest.put(route, { body: commands });
+  logger.info(`${commands.length} Slash-Commands registriert (${scope}).`);
 } catch (err) {
   logger.error('Fehler beim Registrieren der Commands:', err);
   process.exit(1);
