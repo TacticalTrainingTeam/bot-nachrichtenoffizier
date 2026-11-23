@@ -1,7 +1,6 @@
 import { MessageFlags } from 'discord.js';
 import dbOps from '../db/operations.js';
-import { syncDiscordEventsToDb } from '../utils/discordSync.js';
-import { createWeeklySummaryMessage } from '../utils/eventUtils.js';
+import { sendWeeklySummary } from '../utils/weeklyPost.js';
 
 export default async function handleWochenuebersicht(interaction) {
   let channel = interaction.options.getChannel('channel');
@@ -23,9 +22,7 @@ export default async function handleWochenuebersicht(interaction) {
       return;
     }
   }
-  await syncDiscordEventsToDb(interaction.guild);
-  const message = createWeeklySummaryMessage(dbOps.getAllEvents(), dbOps.getAllTopics());
-  await channel.send({ content: message });
+  await sendWeeklySummary(interaction.client, channel);
   await interaction.reply({
     content: 'Test-Wochenübersicht gesendet.',
     flags: MessageFlags.Ephemeral,

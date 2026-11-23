@@ -10,17 +10,17 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  LabelBuilder,
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js';
-import { migrate } from './db/db.js';
+import { migrate, db } from './db/db.js';
 import dbOps from './db/operations.js';
 import commandRouter from './commandRouter.js';
 import logger from './utils/logger.js';
 import { isAdmin, canManageEvents } from './utils/permissions.js';
-import { syncDiscordEventsToDb } from './utils/discordSync.js';
-import { createWeeklySummaryMessage } from './utils/eventUtils.js';
+import { sendWeeklySummary } from './utils/weeklyPost.js';
 import { CHANNELS } from './discordIds.js';
 
 const token = process.env.DISCORD_TOKEN;
@@ -86,12 +86,6 @@ async function updateStreamerMessage(message) {
 
 async function postWeeklySummary() {
   try {
-    const guild = client.guilds.cache.first();
-    if (guild) {
-      await syncDiscordEventsToDb(guild);
-    } else {
-      logger.warn('No guild found for event sync.');
-    }
     const channelId = dbOps.getConfig('postChannel');
     if (!channelId) {
       logger.info('No target channel configured. Skipping weekly post.');
@@ -102,11 +96,7 @@ async function postWeeklySummary() {
       logger.warn('Target channel unreachable. Skipping post.');
       return;
     }
-    const message = createWeeklySummaryMessage(dbOps.getAllEvents(), dbOps.getAllTopics());
-    await channel.send({ content: message, flags: MessageFlags.SuppressNotifications });
-    dbOps.clearTopics();
-    dbOps.clearEvents();
-    logger.info('Weekly summary posted and data cleared.');
+    await sendWeeklySummary(client, channel, { clearAfter: true });
   } catch (err) {
     logger.error('Error posting weekly summary:', err);
   }
@@ -136,11 +126,12 @@ async function handleCommand(interaction) {
 async function handleButton(interaction) {
   const { customId } = interaction;
   if (customId.startsWith('stream_remove_')) {
+    await interaction.deferUpdate();
     const [, , messageId, userId] = customId.split('_');
     const streamer = dbOps.getStreamersByMessageId(messageId).find((s) => s.user_id === userId);
     dbOps.deleteStreamerByUserAndMessage(messageId, userId);
     await updateStreamerMessage(interaction.message);
-    await interaction.reply({
+    await interaction.followUp({
       content: `<@${userId}> wurde abgemeldet.`,
       flags: MessageFlags.Ephemeral,
     });
@@ -148,6 +139,7 @@ async function handleButton(interaction) {
       await notifyTttStream(interaction, userId, streamer.user_name, 'vom TTT-Stream abgemeldet');
     }
   } else if (customId.startsWith('stream_register_')) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     const selectMenu = new StringSelectMenuBuilder()
       .setCustomId(`stream_location_${interaction.message.id}`)
       .setPlaceholder('Wähle Stream-Ort...')
@@ -155,10 +147,9 @@ async function handleButton(interaction) {
         new StringSelectMenuOptionBuilder().setLabel('Stream Privat-Kanäle').setValue('privat'),
         new StringSelectMenuOptionBuilder().setLabel('Stream TTT-Kanäle').setValue('ttt')
       );
-    await interaction.reply({
+    await interaction.editReply({
       content: 'Wähle deinen Stream-Ort:',
       components: [new ActionRowBuilder().addComponents(selectMenu)],
-      flags: MessageFlags.Ephemeral,
     });
   }
 }
@@ -204,10 +195,10 @@ async function handleSelectMenu(interaction) {
   }
 
   if (interaction.values[0] === 'ttt') {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
     await registerStreamer(interaction, messageId, 'Stream TTT');
-    await interaction.reply({
+    await interaction.editReply({
       content: `Du bist registriert als:\n**${interaction.user.username}** - Stream TTT`,
-      flags: MessageFlags.Ephemeral,
     });
     await notifyTttStream(
       interaction,
@@ -223,14 +214,15 @@ async function handleSelectMenu(interaction) {
       .setCustomId(`stream_modal_${messageId}`)
       .setTitle('Stream-URL')
       .addComponents(
-        new ActionRowBuilder().addComponents(
-          new TextInputBuilder()
-            .setCustomId('stream_url')
-            .setLabel('Stream-URL (z.B. https://twitch.tv/...)')
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true)
-            .setMaxLength(500)
-        )
+        new LabelBuilder()
+          .setLabel('Stream-URL (z.B. https://twitch.tv/...)')
+          .setTextInputComponent(
+            new TextInputBuilder()
+              .setCustomId('stream_url')
+              .setStyle(TextInputStyle.Short)
+              .setRequired(true)
+              .setMaxLength(500)
+          )
       )
   );
 }
@@ -238,12 +230,19 @@ async function handleSelectMenu(interaction) {
 async function handleModal(interaction) {
   if (!interaction.customId.startsWith('stream_modal_')) return;
 
+  await interaction.deferReply({ flags: MessageFlags.Ephemeral });
   const messageId = interaction.customId.replace('stream_modal_', '');
-  const streamUrl = interaction.fields.getTextInputValue('stream_url');
+  const streamUrl = interaction.fields.getTextInputValue('stream_url').trim();
+  if (!/^https?:\/\/\S+$/i.test(streamUrl)) {
+    await interaction.editReply({
+      content:
+        'Ungültige URL. Bitte eine gültige Stream-URL angeben (z. B. https://twitch.tv/...).',
+    });
+    return;
+  }
   await registerStreamer(interaction, messageId, 'Stream Privat', streamUrl);
-  await interaction.reply({
+  await interaction.editReply({
     content: `Danke für deine Anmeldung! Du bist registriert als:\n<@${interaction.user.id}> - [Stream Privat](<${streamUrl}>)`,
-    flags: MessageFlags.Ephemeral,
   });
 }
 
@@ -257,17 +256,44 @@ client.on(Events.InteractionCreate, async (interaction) => {
     else if (interaction.isModalSubmit()) await handleModal(interaction);
   } catch (err) {
     logger.error('Error handling interaction:', err);
-    await interaction
-      .reply({ content: 'Ein Fehler ist aufgetreten.', flags: MessageFlags.Ephemeral })
-      .catch(() => {});
+    const payload = { content: 'Ein Fehler ist aufgetreten.', flags: MessageFlags.Ephemeral };
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(payload).catch(() => {});
+    } else {
+      await interaction.reply(payload).catch(() => {});
+    }
   }
 });
 
-client.login(token);
+client.login(token).catch((err) => {
+  logger.error('Discord-Login fehlgeschlagen:', err);
+  process.exit(1);
+});
 
-if (postCron) {
-  cron.schedule(postCron, postWeeklySummary, { timezone });
+const postTask = postCron ? cron.schedule(postCron, postWeeklySummary, { timezone }) : null;
+if (postTask) {
   logger.info(`Wöchentlicher Post-Cron gestartet: ${postCron}`);
 } else {
   logger.warn('Kein POST_CRON gesetzt. Wöchentlicher Post deaktiviert.');
 }
+
+let shuttingDown = false;
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  logger.info(`Received ${signal}, shutting down gracefully...`);
+  try {
+    await postTask?.stop();
+    await client.destroy();
+    db.close();
+  } catch {
+    // best effort during shutdown
+  }
+  process.exit(0);
+}
+process.on('SIGTERM', () => {
+  shutdown('SIGTERM').catch(() => process.exit(1));
+});
+process.on('SIGINT', () => {
+  shutdown('SIGINT').catch(() => process.exit(1));
+});

@@ -5,6 +5,7 @@ import { dirname } from 'node:path';
 const dbFile = process.env.DB_FILE || './data/botdata.sqlite';
 mkdirSync(dirname(dbFile), { recursive: true });
 const db = new DatabaseSync(dbFile);
+db.exec('PRAGMA journal_mode = WAL;');
 
 function migrate() {
   db.exec(`CREATE TABLE IF NOT EXISTS topics (
